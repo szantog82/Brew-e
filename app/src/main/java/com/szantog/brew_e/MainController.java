@@ -8,12 +8,17 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainController extends AppCompatActivity implements OpenScreenFragmentCallback, BrowseFragmentCallback, NavigationView.OnNavigationItemSelectedListener, LoginFragmentCallback {
 
@@ -76,7 +81,42 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
 
     @Override
     public void onBackPressed() {
+        if (previousFragment == browseFragment) {
+            downloadAndSetBrowseFragmentData();
+        }
         changeFragment(previousFragment);
+    }
+
+    private void downloadAndSetBrowseFragmentData() {
+        Call<List<CoffeeShop>> call = RetrofitClient.getInstance().getCoffeeShops();
+        call.enqueue(new Callback<List<CoffeeShop>>() {
+            @Override
+            public void onResponse(Call<List<CoffeeShop>> call, Response<List<CoffeeShop>> response) {
+                List<CoffeeShop> coffeeShopList = response.body();
+                browseFragment.addCoffeeShopsToMap(coffeeShopList);
+            }
+
+            @Override
+            public void onFailure(Call<List<CoffeeShop>> call, Throwable t) {
+                Toast.makeText(MainController.this, "Kávézók letöltése sikertelen!", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void downloadAndSetOrderMenuData(int shop_id) {
+        Call<List<DrinkMenu>> call = RetrofitClient.getInstance().getDrinkMenu(shop_id);
+        call.enqueue(new Callback<List<DrinkMenu>>() {
+            @Override
+            public void onResponse(Call<List<DrinkMenu>> call, Response<List<DrinkMenu>> response) {
+                List<DrinkMenu> drinkMenus = response.body();
+                orderMenuFragment.addMenuItems(drinkMenus);
+            }
+
+            @Override
+            public void onFailure(Call<List<DrinkMenu>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override
@@ -87,6 +127,7 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
                 changeFragment(loginFragment);
                 break;
             case OpenScreenFragment.BROWSE_BUTTON_ID:
+                downloadAndSetBrowseFragmentData();
                 changeFragment(browseFragment);
                 break;
             case OpenScreenFragment.BLOG_BUTTON_ID:
@@ -96,9 +137,10 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
     }
 
     @Override
-    public void browseFragmentButtonClicked(int buttonId, int shopId) {
+    public void browseFragmentButtonClicked(int buttonId, int shop_Id) {
         previousFragment = browseFragment;
         if (buttonId == BrowseFragment.MENU_BUTTON_ID) {
+            downloadAndSetOrderMenuData(shop_Id);
             changeFragment(orderMenuFragment);
         } else if (buttonId == BrowseFragment.BLOG_BUTTON_ID) {
             changeFragment(blogFragment);

@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/order_menu_listitem_img"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_marginStart="10dp"
         android:src="@drawable/marker_default"
         app:layout_constraintBottom_toBottomOf="parent"

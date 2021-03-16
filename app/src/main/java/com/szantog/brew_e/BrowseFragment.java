@@ -1,24 +1,25 @@
 package com.szantog.brew_e;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 interface BrowseFragmentCallback {
-    void browseFragmentButtonClicked(int buttonId, int shopId);
+    void browseFragmentButtonClicked(int buttonId, int shop_Id);
 }
 
 public class BrowseFragment extends Fragment implements Marker.OnMarkerClickListener {
@@ -28,10 +29,35 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
 
     private BrowseFragmentCallback browseFragmentCallback;
 
+    private MapView mapView;
+    private List<CoffeeShop> coffeeShopList = new ArrayList<>();
     private int selectedShopId = 0;
+
+    private TextView shopNameTextView;
+    private TextView shopAddressTextView;
+    private TextView shopMottoTextView;
 
     public BrowseFragment(BrowseFragmentCallback browseFragmentCallback) {
         this.browseFragmentCallback = browseFragmentCallback;
+    }
+
+    public void addCoffeeShopsToMap(List<CoffeeShop> coffeeShopList) {
+        this.coffeeShopList = coffeeShopList;
+        for (int i = 0; i < coffeeShopList.size(); i++) {
+            Marker marker = new Marker(mapView);
+            try {
+                Double Lat = Double.parseDouble(coffeeShopList.get(i).getLat_coord());
+                Double Lon = Double.parseDouble(coffeeShopList.get(i).getLon_coord());
+                marker.setPosition(new GeoPoint(Lat, Lon));
+                marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                marker.setInfoWindow(null);
+                marker.setSubDescription(String.valueOf(coffeeShopList.get(i).getId()));
+                mapView.getOverlays().add(marker);
+                marker.setOnMarkerClickListener(this);
+            } catch (NullPointerException e) {
+
+            }
+        }
     }
 
     @Nullable
@@ -44,12 +70,16 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        shopNameTextView = view.findViewById(R.id.browse_map_selected_shop_title);
+        shopAddressTextView = view.findViewById(R.id.browse_map_selected_shop_details);
+        shopMottoTextView = view.findViewById(R.id.browse_map_selected_shop_motto);
+
         view.findViewById(R.id.browse_map_drink_menu_text).setOnClickListener(this::buttonClicked);
         view.findViewById(R.id.browse_map_drink_menu_img).setOnClickListener(this::buttonClicked);
         view.findViewById(R.id.browse_map_blog_text).setOnClickListener(this::buttonClicked);
         view.findViewById(R.id.browse_map_blog_img).setOnClickListener(this::buttonClicked);
 
-        MapView mapView = view.findViewById(R.id.mapfragment);
+        mapView = view.findViewById(R.id.mapfragment);
         mapView.setTileSource(TileSourceFactory.HIKEBIKEMAP);
         mapView.setMultiTouchControls(true);
         Double initZoom = 10d;
@@ -57,17 +87,6 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
         Double budapestLongitude = 19.03991;
         mapView.getController().setZoom(initZoom);
         mapView.getController().setCenter(new GeoPoint(budapestLatitude, budapestLongitude));
-
-        for (int i = 0; i < 5; i++) {
-            Random random = new Random();
-            Marker marker = new Marker(mapView);
-            marker.setPosition(new GeoPoint(budapestLatitude + random.nextDouble() / 10, budapestLongitude + random.nextDouble() / 10));
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            marker.setInfoWindow(null);
-            marker.setSubDescription(String.valueOf(i));
-            mapView.getOverlays().add(marker);
-            marker.setOnMarkerClickListener(this);
-        }
     }
 
     public void buttonClicked(View v) {
@@ -84,9 +103,18 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
 
     @Override
     public boolean onMarkerClick(Marker marker, MapView mapView) {
-        Log.e("alt-long", "alt: " + String.valueOf(marker.getPosition().getAltitude()) + ", long: " +
-                String.valueOf(marker.getPosition().getLongitude()));
-        Log.e("subdescr", marker.getSubDescription());
+        int selectedId = Integer.parseInt(marker.getSubDescription());
+        selectedShopId = selectedId;
+        int index = 0;
+        for (int i = 0; i < coffeeShopList.size(); i++) {
+            if (coffeeShopList.get(i).getId() == selectedShopId) {
+                index = i;
+            }
+        }
+        CoffeeShop selectedShop = coffeeShopList.get(index);
+        shopNameTextView.setText(selectedShop.getName());
+        shopAddressTextView.setText(selectedShop.getCity() + " " + selectedShop.getPostalcode() + " " + selectedShop.getStreet());
+        shopMottoTextView.setText(selectedShop.getDescription());
         return false;
     }
 }

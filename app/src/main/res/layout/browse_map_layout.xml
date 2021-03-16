@@ -27,7 +27,6 @@
         android:id="@+id/browse_map_selected_shop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Espresso Embassy"
         android:textColor="@color/white"
         android:textSize="@dimen/text_small"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -38,12 +37,21 @@
         android:id="@+id/browse_map_selected_shop_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="1051, Arany János u. 3"
         android:textColor="@color/white"
         android:textSize="@dimen/text_small"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/browse_map_selected_shop" />
+
+    <TextView
+        android:id="@+id/browse_map_selected_shop_motto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="@dimen/text_medium"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/browse_map_selected_shop_details" />
 
     <TextView
         android:id="@+id/browse_map_drink_menu_text"

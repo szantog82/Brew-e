@@ -10,13 +10,17 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class OrderMenuFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
 
-    private String[] drinks;
+    private List<DrinkMenu> drinkMenus = new ArrayList<>();
+    private MenuListViewAdapter menuListViewAdapter;
 
     @Nullable
     @Override
@@ -30,14 +34,18 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
 
         ListView menuListListView = view.findViewById(R.id.order_menu_list_listview);
 
-        drinks = new String[]{"Cappucino", "Espresso", "Sima kávé", "Tej", "Tea"};
-        MenuListViewAdapter menuListViewAdapter = new MenuListViewAdapter(getActivity(), drinks);
+        menuListViewAdapter = new MenuListViewAdapter(getActivity(), drinkMenus);
         menuListListView.setAdapter(menuListViewAdapter);
         menuListListView.setOnItemClickListener(this);
 
         Button orderbtn = view.findViewById(R.id.order_button);
         orderbtn.setOnClickListener(this);
+    }
 
+    public void addMenuItems(List<DrinkMenu> drinkMenus) {
+        this.drinkMenus.clear();
+        this.drinkMenus.addAll(drinkMenus);
+        menuListViewAdapter.notifyDataSetChanged();
     }
 
     @Override
