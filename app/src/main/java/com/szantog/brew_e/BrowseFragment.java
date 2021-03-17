@@ -31,7 +31,7 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
 
     private MapView mapView;
     private List<CoffeeShop> coffeeShopList = new ArrayList<>();
-    private int selectedShopId = 0;
+    private int selectedShopId = -1;
 
     private TextView shopNameTextView;
     private TextView shopAddressTextView;
@@ -90,14 +90,16 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
     }
 
     public void buttonClicked(View v) {
-        int buttonId = 0;
-        if (v.getId() == R.id.browse_map_drink_menu_text || v.getId() == R.id.browse_map_drink_menu_img) {
-            buttonId = MENU_BUTTON_ID;
-        } else if (v.getId() == R.id.browse_map_blog_text || v.getId() == R.id.browse_map_blog_img) {
-            buttonId = BLOG_BUTTON_ID;
-        }
-        if (browseFragmentCallback != null) {
-            browseFragmentCallback.browseFragmentButtonClicked(buttonId, selectedShopId);
+        if (selectedShopId > 0) {
+            int buttonId = 0;
+            if (v.getId() == R.id.browse_map_drink_menu_text || v.getId() == R.id.browse_map_drink_menu_img) {
+                buttonId = MENU_BUTTON_ID;
+            } else if (v.getId() == R.id.browse_map_blog_text || v.getId() == R.id.browse_map_blog_img) {
+                buttonId = BLOG_BUTTON_ID;
+            }
+            if (browseFragmentCallback != null) {
+                browseFragmentCallback.browseFragmentButtonClicked(buttonId, selectedShopId);
+            }
         }
     }
 
