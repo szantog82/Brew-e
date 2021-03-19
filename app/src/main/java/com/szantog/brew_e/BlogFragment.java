@@ -1,6 +1,7 @@
 package com.szantog.brew_e;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
@@ -9,11 +10,38 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class BlogFragment extends Fragment {
+
+    private List<BlogItem> blogItems = new ArrayList<>();
+
+    private TextView blogTitleText;
+    private TextView blogAuthorText;
+    private TextView blogDateText;
+    private TextView blogMainText;
+
+    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd. HH:mm");
+
+    public void addBlogData(List<BlogItem> blogItems) {
+        this.blogItems = blogItems;
+        showBlog(0);
+    }
+
+    private void showBlog(int index) {
+        blogTitleText.setText(blogItems.get(index).getTitle());
+        blogAuthorText.setText(blogItems.get(index).getShop_name());
+        blogDateText.setText(simpleDateFormat.format(new Date(blogItems.get(index).getUpload_date() * 1000)));
+        blogMainText.setText(Html.fromHtml(blogItems.get(index).getText()));
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -24,35 +52,30 @@ public class BlogFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        blogTitleText = view.findViewById(R.id.blog_title);
+        blogAuthorText = view.findViewById(R.id.blog_shop_name);
+        blogDateText = view.findViewById(R.id.blog_date);
+        blogMainText = view.findViewById(R.id.blog_main);
+        blogMainText.setMovementMethod(new ScrollingMovementMethod());
+
         TextView shopNameTextView = view.findViewById(R.id.blog_shop_name);
         shopNameTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String[] items = new String[]{"A kávé története", "Kávéházak magyarországgon", "Hogyan pörkölünk?"};
+                String items[] = new String[blogItems.size()];
+                for (int i = 0; i < blogItems.size(); i++) {
+                    items[i] = blogItems.get(i).getTitle();
+                }
                 new AlertDialog.Builder(getActivity())
                         .setTitle("További cikkek - Espresso Embassy")
-                        .setItems(items, null)
+                        .setItems(items, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) {
+                                showBlog(which);
+                            }
+                        })
                         .show();
             }
         });
-
-        String ex = "A kávé története\n" +
-                "Gondoltad volna, hogy valószínűleg a kávét eleinte nem itták, hanem ették? Az ugandaiak például, ha távoli útra indultak, szárított babszemeket rágcsáltak, mivel úgy hitték, így különleges erőre kapnak. De milyen messzire is nyúlik vissza a kávé története?\n" +
-                "\n" +
-                " \n" +
-                "\n" +
-                "Az első kávészállítmány VelencébenAz egyik legenda szerint a kávészemek frissítő hatását egy Káldi nevű etióp pásztor fedezte fel, aki észrevette, hogy ha a kecskéi piros bogyókat legelésznek, sokkal élénkebbek lesznek. Ezt elmondta a közelben élő szerzeteseknek, akik rájöttek arra, hogy ha a magokat megpörkölik, ízletes italt készíthetnek.\n" +
-                "\n" +
-                "A másik történet szerint egy Rhazes nevű arab orvos a kávét, a \"quawa\" nevű élénkítő növényt orvosságként használta, és meg is említette A kontinens című munkájában.\n" +
-                "\n" +
-                "A kávét először Jemenben kezdték el termeszteni, ahol teraszos gazdálkodást folytattak. A kávézás szokását mohamedán zarándokok vitték magukkal Mekkába és Medinába, innen terjedt tovább a kávé fogyasztása az egész Közel-Keletre. Később a kávétermesztés megjelent Arábiában és Egyiptomban is, ahol a kávé (vagy Kahweh) fogyasztása nem sokkal később mindennapi szokássá vált.\n" +
-                "\n" +
-                "A 16. században a Közel-Keleten járó utazók és botanikusok egy eddig ismeretlen növényről és annak terméséből készült italról küldtek híreket Európába. A kereskedők hamar felismerték az újdonságban rejlő lehetőségeket, és az 1600-as évek elején megérkeztek az első kávészemekkel töltött zsákok Velencébe. Ez volt az a pillanat, amikor az európai emberek elkezdtek megismerkedni a kávéval. A velenceiek kávészállítmányának híre gyorsan elterjedt, így nem sokkal később a holland kereskedők is elkezdtek érdeklődni a kávé termesztése és kereskedelmi forgalmazása iránt. Az európai utazóknak és szerzeteseknek köszönhetően hamarosan a kávé a világ minden tájára eljutott, és népszerűsége hihetetlen gyorsan növekedett.\n" +
-                "\n" +
-                "A hirtelen jött hírnév jó alapot biztosított egy új társasági színtér megalakulásának, ezért Európa-szerte (Olaszországban, Nagy-Britanniában, Hollandiában, Franciaországban és Németországban) egymásra nyíltak meg a kávéházak. Mint ahogy az első kávészállítmány is Velencében ért földet Európában, úgy az öreg kontinens első kávéháza is itt nyitotta ki kapuit La Bottega del Caffé néven 1624-ben. A 18. század elejére a hollandok kávéültetvényeket létesítettek Indonéziában, és a franciák elvittek néhány ültetvényt Martinique-ra, míg a spanyolok a Karib-tenger térségében, Közép-Amerikában és Brazíliában kezdtek kávét termeszteni. Így jutott Brazília kávéhoz, és ennek eredményeképp napjainkra Brazília vált a világ egyik legnagyobb kávétermesztő országává. A németek eljuttatták a kávét Kelet-Afrikába, Kenyába és a Kilimandzsáró lejtőire. A 19. századra a Ráktérítő és a Baktérítő sávjában a kávé egyenletesen elterjedt, majd a 20. századra Európa–szerte és a világ több pontján is közkedvelt élvezeti cikké vált. ";
-
-        TextView blogText = view.findViewById(R.id.blog_main);
-        blogText.setMovementMethod(new ScrollingMovementMethod());
-        blogText.setText(Html.fromHtml(ex));
     }
 }

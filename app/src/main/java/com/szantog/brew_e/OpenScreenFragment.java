@@ -23,8 +23,25 @@ public class OpenScreenFragment extends Fragment {
     public static final int BLOG_BUTTON_ID = 102;
     private OpenScreenFragmentCallback openScreenFragmentCallback;
 
+    private TextView loginTextView;
+    private TextView browseTextView;
+    private TextView welcomeTextView;
+
     public OpenScreenFragment(OpenScreenFragmentCallback openScreenFragmentCallback) {
         this.openScreenFragmentCallback = openScreenFragmentCallback;
+    }
+
+    public void setLoggedIn(boolean logged_in, String name) {
+        if (logged_in) {
+            loginTextView.setVisibility(View.GONE);
+            browseTextView.setText("Böngészés");
+            welcomeTextView.setVisibility(View.VISIBLE);
+            welcomeTextView.setText("Üdvözöllek, " + name);
+        } else {
+            loginTextView.setVisibility(View.VISIBLE);
+            browseTextView.setText("Böngészés vendégként");
+            welcomeTextView.setVisibility(View.GONE);
+        }
     }
 
     @Nullable
@@ -36,6 +53,10 @@ public class OpenScreenFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        loginTextView = view.findViewById(R.id.open_layout_login_text);
+        browseTextView = view.findViewById(R.id.open_layout_browse_text);
+        welcomeTextView = view.findViewById(R.id.open_layout_welcome_text);
 
         LinearLayout innerLinearLayout = view.findViewById(R.id.open_layout_inner_linearlayout);
         for (int i = 0; i < innerLinearLayout.getChildCount(); i++) {

@@ -5,13 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 interface LoginFragmentCallback {
-    void loginFragmentButtonClicked(boolean success);
+    void loginFragmentButtonClicked(String login, String password);
 }
 
 public class LoginFragment extends Fragment {
@@ -33,11 +34,15 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         Button loginButton = view.findViewById(R.id.login_button);
+        EditText loginText = view.findViewById(R.id.login_username_edittext);
+        EditText passwordText = view.findViewById(R.id.login_password_edittext);
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (loginFragmentCallback != null) {
-                    loginFragmentCallback.loginFragmentButtonClicked(true);
+                    loginFragmentCallback.loginFragmentButtonClicked(loginText.getText().toString(),
+                            passwordText.getText().toString());
                 }
             }
         });

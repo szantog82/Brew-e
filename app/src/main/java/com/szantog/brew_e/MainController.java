@@ -22,6 +22,8 @@ import retrofit2.Response;
 
 public class MainController extends AppCompatActivity implements OpenScreenFragmentCallback, BrowseFragmentCallback, NavigationView.OnNavigationItemSelectedListener, LoginFragmentCallback {
 
+    private SharedPreferencesHandler sharedPreferencesHandler;
+
     private FragmentTransaction fragmentTransaction;
     private OpenScreenFragment openScreenFragment;
     private BrowseFragment browseFragment;
@@ -36,12 +38,14 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
     private TextView navHeaderNameTextView;
 
     private static boolean logged_in = false;
+    private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        sharedPreferencesHandler = new SharedPreferencesHandler(this);
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -54,6 +58,18 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
         loginFragment = new LoginFragment(this);
         orderMenuFragment = new OrderMenuFragment();
         blogFragment = new BlogFragment();
+
+        ConnectionHandler.testConnection(this, new ConnectionTesterCallback() {
+            @Override
+            public void connectionTesterResult(boolean success) {
+                if (success) {
+                    user = sharedPreferencesHandler.getUserData();
+                    logged_in = true;
+                    updateNavigationView();
+                    openScreenFragment.setLoggedIn(logged_in, user.getFamily_name() + " " + user.getFirst_name());
+                }
+            }
+        });
 
         previousFragment = openScreenFragment;
         changeFragment(openScreenFragment);
@@ -69,11 +85,9 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
         navigationView.getMenu().clear();
         if (logged_in) {
             navigationView.inflateMenu(R.menu.drawer_menu_logged_in);
-            //  navigationView.setNavigationItemSelectedListener(this);
-            navHeaderNameTextView.setText("Kovács Pistike");
+            navHeaderNameTextView.setText(user.getFamily_name() + " " + user.getFirst_name());
         } else {
             navigationView.inflateMenu(R.menu.drawer_menu_not_logged_in);
-            //  navigationView.setNavigationItemSelectedListener(this);
             navHeaderNameTextView.setText("Vendég");
         }
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -119,6 +133,22 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
         });
     }
 
+    private void downloadAndSetBlogData(int shop_id) {
+        Call<List<BlogItem>> call = RetrofitClient.getInstance().getBlogs(shop_id);
+        call.enqueue(new Callback<List<BlogItem>>() {
+            @Override
+            public void onResponse(Call<List<BlogItem>> call, Response<List<BlogItem>> response) {
+                List<BlogItem> blogs = response.body();
+                blogFragment.addBlogData(blogs);
+            }
+
+            @Override
+            public void onFailure(Call<List<BlogItem>> call, Throwable t) {
+
+            }
+        });
+    }
+
     @Override
     public void openScreenFragmentButtonClicked(int buttonId) {
         previousFragment = openScreenFragment;
@@ -143,19 +173,29 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
             downloadAndSetOrderMenuData(shop_Id);
             changeFragment(orderMenuFragment);
         } else if (buttonId == BrowseFragment.BLOG_BUTTON_ID) {
+            downloadAndSetBlogData(shop_Id);
             changeFragment(blogFragment);
         }
     }
 
 
     @Override
-    public void loginFragmentButtonClicked(boolean success) {
-        if (success) {
-            logged_in = true;
-            updateNavigationView();
-            Toast.makeText(this, "Sikeres bejelentkezés", Toast.LENGTH_LONG).show();
-            changeFragment(browseFragment);
-        }
+    public void loginFragmentButtonClicked(final String login, String password) {
+        ConnectionHandler.loginUser(MainController.this, login, password, new ConnectionLoginCallback() {
+            @Override
+            public void connectionLoginResult(boolean success) {
+                if (success) {
+                    logged_in = true;
+                    Toast.makeText(MainController.this, "Sikeres bejelentkezés!", Toast.LENGTH_LONG).show();
+                    updateNavigationView();
+                    openScreenFragment.setLoggedIn(true, login);
+                    changeFragment(openScreenFragment);
+                } else {
+                    Toast.makeText(MainController.this, "Sikertelen bejelentkezés!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -170,7 +210,9 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
                 break;
             case R.id.drawer_menu_logout:
                 logged_in = false;
+                ConnectionHandler.logoutUser(MainController.this);
                 updateNavigationView();
+                openScreenFragment.setLoggedIn(logged_in, "");
                 changeFragment(openScreenFragment);
                 break;
         }
