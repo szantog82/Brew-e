@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/order_menu_list_listview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -34,7 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="Espresso embassy kínálata"
         android:textColor="@color/primary_brown"
         android:textSize="@dimen/text_big"
         android:textStyle="bold|italic"

@@ -11,7 +11,6 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -30,19 +29,19 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
     private BrowseFragmentCallback browseFragmentCallback;
 
     private MapView mapView;
-    private List<CoffeeShop> coffeeShopList = new ArrayList<>();
+    private List<CoffeeShop> coffeeShopList;
     private int selectedShopId = -1;
 
     private TextView shopNameTextView;
     private TextView shopAddressTextView;
     private TextView shopMottoTextView;
 
-    public BrowseFragment(BrowseFragmentCallback browseFragmentCallback) {
+    public BrowseFragment(BrowseFragmentCallback browseFragmentCallback, List<CoffeeShop> coffeeShopList) {
         this.browseFragmentCallback = browseFragmentCallback;
+        this.coffeeShopList = coffeeShopList;
     }
 
-    public void addCoffeeShopsToMap(List<CoffeeShop> coffeeShopList) {
-        this.coffeeShopList = coffeeShopList;
+    public void addCoffeeShopsToMap() {
         for (int i = 0; i < coffeeShopList.size(); i++) {
             Marker marker = new Marker(mapView);
             try {
@@ -87,6 +86,7 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
         Double budapestLongitude = 19.03991;
         mapView.getController().setZoom(initZoom);
         mapView.getController().setCenter(new GeoPoint(budapestLatitude, budapestLongitude));
+        addCoffeeShopsToMap();
     }
 
     public void buttonClicked(View v) {

@@ -30,9 +30,8 @@ public class BlogFragment extends Fragment {
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd. HH:mm");
 
-    public void addBlogData(List<BlogItem> blogItems) {
+    public BlogFragment(List<BlogItem> blogItems) {
         this.blogItems = blogItems;
-        showBlog(0);
     }
 
     private void showBlog(int index) {
@@ -57,6 +56,11 @@ public class BlogFragment extends Fragment {
         blogDateText = view.findViewById(R.id.blog_date);
         blogMainText = view.findViewById(R.id.blog_main);
         blogMainText.setMovementMethod(new ScrollingMovementMethod());
+        if (blogItems.size() > 0) {
+            showBlog(0);
+        } else {
+            blogTitleText.setText("Nincs még blog feltöltve");
+        }
 
         TextView shopNameTextView = view.findViewById(R.id.blog_shop_name);
         shopNameTextView.setOnClickListener(new View.OnClickListener() {
@@ -67,7 +71,7 @@ public class BlogFragment extends Fragment {
                     items[i] = blogItems.get(i).getTitle();
                 }
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("További cikkek - Espresso Embassy")
+                        .setTitle("További cikkek - " + blogItems.get(0).getShop_name())
                         .setItems(items, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {

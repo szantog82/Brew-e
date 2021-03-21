@@ -1,5 +1,6 @@
 package com.szantog.brew_e;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,24 +15,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainController extends AppCompatActivity implements OpenScreenFragmentCallback, BrowseFragmentCallback, NavigationView.OnNavigationItemSelectedListener, LoginFragmentCallback {
 
     private SharedPreferencesHandler sharedPreferencesHandler;
 
-    private FragmentTransaction fragmentTransaction;
-    private OpenScreenFragment openScreenFragment;
-    private BrowseFragment browseFragment;
-    private LoginFragment loginFragment;
-    private OrderMenuFragment orderMenuFragment;
-    private BlogFragment blogFragment;
+    private ProgressDialog progressDialog;
 
-    private Fragment previousFragment;
+    private int actualFragmentLevel = 0;
+    private static final int OPENSCREENFRAGMENT_ID = 10;
+    private static final int BROWSEFRAGMENT_ID = 11;
+    private static final int BLOGFRAGMENT_ID = 12;
+    private static final int LOGINFRAGMENT_ID = 13;
+    private static final int ORDERMENUFRAGMENT_ID = 14;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -39,6 +36,9 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
 
     private static boolean logged_in = false;
     private User user;
+    private List<CoffeeShop> coffeeShopList;
+    private List<DrinkMenu> drinkMenus;
+    private List<BlogItem> blogList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,31 +53,64 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
         navHeaderNameTextView = navigationHeaderView.findViewById(R.id.drawer_header_user_name);
         navHeaderNameTextView.setText("Vendég");
 
-        openScreenFragment = new OpenScreenFragment(this);
-        browseFragment = new BrowseFragment(this);
-        loginFragment = new LoginFragment(this);
-        orderMenuFragment = new OrderMenuFragment();
-        blogFragment = new BlogFragment();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Folyamatban....");
+        progressDialog.setTitle("Adatok letöltése");
+        progressDialog.show();
 
-        ConnectionHandler.testConnection(this, new ConnectionTesterCallback() {
-            @Override
-            public void connectionTesterResult(boolean success) {
-                if (success) {
-                    user = sharedPreferencesHandler.getUserData();
+        ConnectionHandler.testConnection(this, success -> {
+            if (success) {
+                progressDialog.dismiss();
+                user = sharedPreferencesHandler.getUserData();
+                if (user.getLogin().length() > 1) {
                     logged_in = true;
                     updateNavigationView();
-                    openScreenFragment.setLoggedIn(logged_in, user.getFamily_name() + " " + user.getFirst_name());
+                    changeFragment(OPENSCREENFRAGMENT_ID);
+                } else {
+                    Toast.makeText(this, "App használata vendégként", Toast.LENGTH_LONG).show();
                 }
+            } else {
+                progressDialog.dismiss();
+                Toast.makeText(this, "Adatok letöltése sikertelen", Toast.LENGTH_LONG).show();
+                logged_in = false;
+                changeFragment(OPENSCREENFRAGMENT_ID);
             }
         });
 
-        previousFragment = openScreenFragment;
-        changeFragment(openScreenFragment);
+        ConnectionHandler.downloadShopsForMap(this, new ConnectionDownloadShopsForMapCallback() {
+            @Override
+            public void connectionMapResult(List<CoffeeShop> coffeeShops) {
+                MainController.this.coffeeShopList = coffeeShops;
+            }
+        });
     }
 
-    private void changeFragment(Fragment fragment) {
-        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.main_fragment_placeholder, fragment);
+    private void changeFragment(int fragmentId) {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        switch (fragmentId) {
+            case OPENSCREENFRAGMENT_ID:
+                actualFragmentLevel = 0;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new OpenScreenFragment(this, user));
+                break;
+            case LOGINFRAGMENT_ID:
+                actualFragmentLevel = 1;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new LoginFragment(this));
+                break;
+            case BROWSEFRAGMENT_ID:
+                actualFragmentLevel = 1;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new BrowseFragment(this, coffeeShopList));
+                break;
+            case BLOGFRAGMENT_ID:
+                actualFragmentLevel = 2;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new BlogFragment(blogList));
+                break;
+            case ORDERMENUFRAGMENT_ID:
+                actualFragmentLevel = 2;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new OrderMenuFragment(drinkMenus));
+                break;
+        }
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -95,86 +128,67 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
 
     @Override
     public void onBackPressed() {
-        if (previousFragment == browseFragment) {
-            downloadAndSetBrowseFragmentData();
+        switch (actualFragmentLevel) {
+            case 0:
+                this.moveTaskToBack(true);
+                break;
+            case 1:
+                changeFragment(OPENSCREENFRAGMENT_ID);
+                break;
+            case 2:
+                changeFragment(BROWSEFRAGMENT_ID);
+                break;
         }
-        changeFragment(previousFragment);
-    }
-
-    private void downloadAndSetBrowseFragmentData() {
-        Call<List<CoffeeShop>> call = RetrofitClient.getInstance().getCoffeeShops();
-        call.enqueue(new Callback<List<CoffeeShop>>() {
-            @Override
-            public void onResponse(Call<List<CoffeeShop>> call, Response<List<CoffeeShop>> response) {
-                List<CoffeeShop> coffeeShopList = response.body();
-                browseFragment.addCoffeeShopsToMap(coffeeShopList);
-            }
-
-            @Override
-            public void onFailure(Call<List<CoffeeShop>> call, Throwable t) {
-                Toast.makeText(MainController.this, "Kávézók letöltése sikertelen!", Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
-    private void downloadAndSetOrderMenuData(int shop_id) {
-        Call<List<DrinkMenu>> call = RetrofitClient.getInstance().getDrinkMenu(shop_id);
-        call.enqueue(new Callback<List<DrinkMenu>>() {
-            @Override
-            public void onResponse(Call<List<DrinkMenu>> call, Response<List<DrinkMenu>> response) {
-                List<DrinkMenu> drinkMenus = response.body();
-                orderMenuFragment.addMenuItems(drinkMenus);
-            }
-
-            @Override
-            public void onFailure(Call<List<DrinkMenu>> call, Throwable t) {
-
-            }
-        });
-    }
-
-    private void downloadAndSetBlogData(int shop_id) {
-        Call<List<BlogItem>> call = RetrofitClient.getInstance().getBlogs(shop_id);
-        call.enqueue(new Callback<List<BlogItem>>() {
-            @Override
-            public void onResponse(Call<List<BlogItem>> call, Response<List<BlogItem>> response) {
-                List<BlogItem> blogs = response.body();
-                blogFragment.addBlogData(blogs);
-            }
-
-            @Override
-            public void onFailure(Call<List<BlogItem>> call, Throwable t) {
-
-            }
-        });
     }
 
     @Override
     public void openScreenFragmentButtonClicked(int buttonId) {
-        previousFragment = openScreenFragment;
         switch (buttonId) {
             case OpenScreenFragment.LOGIN_BUTTON_ID:
-                changeFragment(loginFragment);
+                changeFragment(LOGINFRAGMENT_ID);
                 break;
             case OpenScreenFragment.BROWSE_BUTTON_ID:
-                downloadAndSetBrowseFragmentData();
-                changeFragment(browseFragment);
+                if (coffeeShopList != null) {
+                    changeFragment(BROWSEFRAGMENT_ID);
+                }
                 break;
             case OpenScreenFragment.BLOG_BUTTON_ID:
-                changeFragment(blogFragment);
+                Toast.makeText(this, "Itt majd megnyílnak a blogok", Toast.LENGTH_SHORT).show();
+                //changeFragment(BLOGFRAGMENT_ID);
                 break;
         }
     }
 
     @Override
     public void browseFragmentButtonClicked(int buttonId, int shop_Id) {
-        previousFragment = browseFragment;
         if (buttonId == BrowseFragment.MENU_BUTTON_ID) {
-            downloadAndSetOrderMenuData(shop_Id);
-            changeFragment(orderMenuFragment);
+            progressDialog.show();
+            ConnectionHandler.downloadMenu(this, shop_Id, new ConnectionDownloadMenu() {
+                @Override
+                public void connectionMenuResult(List<DrinkMenu> drinkMenus) {
+                    progressDialog.dismiss();
+                    if (drinkMenus != null) {
+                        MainController.this.drinkMenus = drinkMenus;
+                        changeFragment(ORDERMENUFRAGMENT_ID);
+                    } else {
+                        Toast.makeText(MainController.this, "Letöltés sikertelen", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         } else if (buttonId == BrowseFragment.BLOG_BUTTON_ID) {
-            downloadAndSetBlogData(shop_Id);
-            changeFragment(blogFragment);
+            progressDialog.show();
+            ConnectionHandler.downloadBlogs(this, shop_Id, new ConnectionDownloadBlogs() {
+                @Override
+                public void connectionBlogsResult(List<BlogItem> blogList) {
+                    progressDialog.dismiss();
+                    if (blogList != null) {
+                        MainController.this.blogList = blogList;
+                        changeFragment(BLOGFRAGMENT_ID);
+                    } else {
+                        Toast.makeText(MainController.this, "Letöltés sikertelen", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         }
     }
 
@@ -186,10 +200,10 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
             public void connectionLoginResult(boolean success) {
                 if (success) {
                     logged_in = true;
+                    user = sharedPreferencesHandler.getUserData();
                     Toast.makeText(MainController.this, "Sikeres bejelentkezés!", Toast.LENGTH_LONG).show();
                     updateNavigationView();
-                    openScreenFragment.setLoggedIn(true, login);
-                    changeFragment(openScreenFragment);
+                    changeFragment(OPENSCREENFRAGMENT_ID);
                 } else {
                     Toast.makeText(MainController.this, "Sikertelen bejelentkezés!", Toast.LENGTH_LONG).show();
                 }
@@ -202,18 +216,26 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.drawer_menu_login:
-                changeFragment(loginFragment);
+                changeFragment(LOGINFRAGMENT_ID);
                 break;
             case R.id.drawer_menu_prev_orders:
                 PrevOrdersAlertDialog dialog = new PrevOrdersAlertDialog(this);
                 dialog.show();
                 break;
             case R.id.drawer_menu_logout:
-                logged_in = false;
-                ConnectionHandler.logoutUser(MainController.this);
-                updateNavigationView();
-                openScreenFragment.setLoggedIn(logged_in, "");
-                changeFragment(openScreenFragment);
+                ConnectionHandler.logoutUser(MainController.this, new ConnectionLogoutCallback() {
+                    @Override
+                    public void connectionLogoutResult(boolean success) {
+                        if (success) {
+                            logged_in = false;
+                            sharedPreferencesHandler.clearUserData();
+                            user = null;
+                            Toast.makeText(MainController.this, "Kijelentkezés sikeres", Toast.LENGTH_LONG).show();
+                            updateNavigationView();
+                            changeFragment(OPENSCREENFRAGMENT_ID);
+                        }
+                    }
+                });
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);

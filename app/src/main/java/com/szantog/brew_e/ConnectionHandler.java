@@ -2,6 +2,8 @@ package com.szantog.brew_e;
 
 import android.content.Context;
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -14,6 +16,21 @@ interface ConnectionLoginCallback {
     void connectionLoginResult(boolean success);
 }
 
+interface ConnectionLogoutCallback {
+    void connectionLogoutResult(boolean success);
+}
+
+interface ConnectionDownloadShopsForMapCallback {
+    void connectionMapResult(List<CoffeeShop> coffeeShops);
+}
+
+interface ConnectionDownloadMenu {
+    void connectionMenuResult(List<DrinkMenu> drinkMenus);
+}
+
+interface ConnectionDownloadBlogs {
+    void connectionBlogsResult(List<BlogItem> blogList);
+}
 
 public class ConnectionHandler {
 
@@ -33,10 +50,8 @@ public class ConnectionHandler {
                 User user = response.body();
                 if (user.getLogin() != null) {
                     sharedPreferencesHandler.setUserData(user);
-                    connectionTesterCallback.connectionTesterResult(true);
-                } else {
-                    connectionTesterCallback.connectionTesterResult(false);
                 }
+                connectionTesterCallback.connectionTesterResult(true);
             }
 
             @Override
@@ -46,19 +61,23 @@ public class ConnectionHandler {
         });
     }
 
-    public static void logoutUser(Context context) {
+    public static void logoutUser(Context context, ConnectionLogoutCallback connectionLogoutCallback) {
         SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(context);
         String session_id = sharedPreferencesHandler.getSessionId();
         Call<Void> call = RetrofitClient.getInstance().logoutUser("PHPSESSID=" + session_id);
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                sharedPreferencesHandler.clearUserData();
+                if (connectionLogoutCallback != null) {
+                    connectionLogoutCallback.connectionLogoutResult(true);
+                }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-
+                if (connectionLogoutCallback != null) {
+                    connectionLogoutCallback.connectionLogoutResult(false);
+                }
             }
         });
     }
@@ -88,6 +107,59 @@ public class ConnectionHandler {
             @Override
             public void onFailure(Call<LoginResult> call, Throwable t) {
                 connectionLoginCallback.connectionLoginResult(false);
+            }
+        });
+    }
+
+    public static void downloadShopsForMap(Context context, ConnectionDownloadShopsForMapCallback connectionDownloadShopsForMapCallback) {
+        Call<List<CoffeeShop>> call = RetrofitClient.getInstance().getCoffeeShops();
+        call.enqueue(new Callback<List<CoffeeShop>>() {
+            @Override
+            public void onResponse(Call<List<CoffeeShop>> call, Response<List<CoffeeShop>> response) {
+                List<CoffeeShop> coffeeShopList = response.body();
+                if (connectionDownloadShopsForMapCallback != null) {
+                    connectionDownloadShopsForMapCallback.connectionMapResult(coffeeShopList);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<CoffeeShop>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public static void downloadMenu(Context context, int shop_id, ConnectionDownloadMenu connectionDownloadMenu) {
+        Call<List<DrinkMenu>> call = RetrofitClient.getInstance().getDrinkMenu(shop_id);
+        call.enqueue(new Callback<List<DrinkMenu>>() {
+            @Override
+            public void onResponse(Call<List<DrinkMenu>> call, Response<List<DrinkMenu>> response) {
+                List<DrinkMenu> drinkMenus = response.body();
+                if (connectionDownloadMenu != null) {
+                    connectionDownloadMenu.connectionMenuResult(drinkMenus);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<DrinkMenu>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    public static void downloadBlogs(Context context, int shop_id, ConnectionDownloadBlogs connectionDownloadBlogs) {
+        Call<List<BlogItem>> call = RetrofitClient.getInstance().getBlogs(shop_id);
+        call.enqueue(new Callback<List<BlogItem>>() {
+            @Override
+            public void onResponse(Call<List<BlogItem>> call, Response<List<BlogItem>> response) {
+                if (connectionDownloadBlogs != null) {
+                    connectionDownloadBlogs.connectionBlogsResult(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<BlogItem>> call, Throwable t) {
+
             }
         });
     }

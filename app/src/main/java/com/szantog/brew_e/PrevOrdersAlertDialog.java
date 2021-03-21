@@ -36,5 +36,14 @@ public class PrevOrdersAlertDialog extends AlertDialog.Builder {
         ExpandableListView expandableListView = view.findViewById(R.id.prev_orders_dialog_expandable_list);
         PrevOrdersExpandableAdapter adapter = new PrevOrdersExpandableAdapter(context, dates, entries);
         expandableListView.setAdapter(adapter);
+        for (int position = 1; position <= dates.size(); position++) {
+            expandableListView.expandGroup(position - 1);
+        }
+        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+            @Override
+            public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l) {
+                return true;
+            }
+        });
     }
 }
