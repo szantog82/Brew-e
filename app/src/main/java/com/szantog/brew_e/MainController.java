@@ -17,7 +17,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentTransaction;
 
-public class MainController extends AppCompatActivity implements OpenScreenFragmentCallback, BrowseFragmentCallback, NavigationView.OnNavigationItemSelectedListener, LoginFragmentCallback {
+public class MainController extends AppCompatActivity implements OpenScreenFragmentCallback, BrowseFragmentCallback, NavigationView.OnNavigationItemSelectedListener, LoginFragmentCallback, OrderMenuFragment.OrderMenuFragmentCallback {
 
     private SharedPreferencesHandler sharedPreferencesHandler;
 
@@ -29,6 +29,7 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
     private static final int BLOGFRAGMENT_ID = 12;
     private static final int LOGINFRAGMENT_ID = 13;
     private static final int ORDERMENUFRAGMENT_ID = 14;
+    private static final int ORDERSENTFRAGMENT_ID = 15;
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -37,8 +38,9 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
     private static boolean logged_in = false;
     private User user;
     private List<CoffeeShop> coffeeShopList;
-    private List<DrinkMenu> drinkMenus;
+    private List<DrinkItem> drinkItems;
     private List<BlogItem> blogList;
+    private List<DrinkItem> bucket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,8 +109,11 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
                 break;
             case ORDERMENUFRAGMENT_ID:
                 actualFragmentLevel = 2;
-                fragmentTransaction.replace(R.id.main_fragment_placeholder, new OrderMenuFragment(drinkMenus));
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new OrderMenuFragment(drinkItems, this));
                 break;
+            case ORDERSENTFRAGMENT_ID:
+                actualFragmentLevel = 1;
+                fragmentTransaction.replace(R.id.main_fragment_placeholder, new OrderSentFragment(bucket));
         }
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
@@ -165,10 +170,10 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
             progressDialog.show();
             ConnectionHandler.downloadMenu(this, shop_Id, new ConnectionDownloadMenu() {
                 @Override
-                public void connectionMenuResult(List<DrinkMenu> drinkMenus) {
+                public void connectionMenuResult(List<DrinkItem> drinkItems) {
                     progressDialog.dismiss();
-                    if (drinkMenus != null) {
-                        MainController.this.drinkMenus = drinkMenus;
+                    if (drinkItems != null) {
+                        MainController.this.drinkItems = drinkItems;
                         changeFragment(ORDERMENUFRAGMENT_ID);
                     } else {
                         Toast.makeText(MainController.this, "Letöltés sikertelen", Toast.LENGTH_LONG).show();
@@ -209,7 +214,13 @@ public class MainController extends AppCompatActivity implements OpenScreenFragm
                 }
             }
         });
+    }
 
+    @Override
+    public void OrderMenuFragmentOrderSubmitted(List<DrinkItem> bucket) {
+        this.bucket = bucket;
+        ConnectionHandler.uploadOrder(MainController.this, bucket);
+        changeFragment(ORDERSENTFRAGMENT_ID);
     }
 
     @Override

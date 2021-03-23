@@ -17,18 +17,22 @@ public interface RetrofitApi {
     Call<List<CoffeeShop>> getCoffeeShops();
 
     @GET("get_drink_menu/{shop_id}")
-    Call<List<DrinkMenu>> getDrinkMenu(@Path("shop_id") int shop_id);
+    Call<List<DrinkItem>> getDrinkMenu(@Path("shop_id") int shop_id);
 
     @GET("get_blog/{shop_id}")
     Call<List<BlogItem>> getBlogs(@Path("shop_id") int shop_id);
 
     @FormUrlEncoded
     @POST("login_user")
-    Call<LoginResult> loginUser(@Field("login") String login, @Field("password") String password);
+    Call<ResponseModel> loginUser(@Field("login") String login, @Field("password") String password);
 
     @POST("test_user_connection")
     Call<User> testUserConnection(@Header("Cookie") String session_id);
 
     @POST("logout_user")
     Call<Void> logoutUser(@Header("Cookie") String session_id);
+
+    @FormUrlEncoded
+    @POST("upload_order")
+    Call<ResponseModel> uploadOrder(@Header("Cookie") String session_id, @Field("bucket") String data);
 }

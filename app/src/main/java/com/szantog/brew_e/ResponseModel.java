@@ -1,11 +1,11 @@
 package com.szantog.brew_e;
 
-public class LoginResult {
+public class ResponseModel {
 
     private int success;
     private String session_id;
 
-    public LoginResult(int success, String session_id) {
+    public ResponseModel(int success, String session_id) {
         this.success = success;
         this.session_id = session_id;
     }

@@ -18,15 +18,15 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
 
     private Context context;
     private List<String> groups;
-    private List<DrinkMenu>[] orderedList;
+    private List<DrinkItem>[] orderedList;
 
-    public OrderMenuExpandableAdapter(Context context, List<DrinkMenu> drinkMenus) {
+    public OrderMenuExpandableAdapter(Context context, List<DrinkItem> drinkItems) {
         this.context = context;
         groups = new ArrayList<>();
 
-        for (DrinkMenu drinkMenu : drinkMenus) {
-            if (groups.indexOf(drinkMenu.getItem_group()) < 0) {
-                groups.add(drinkMenu.getItem_group());
+        for (DrinkItem drinkItem : drinkItems) {
+            if (groups.indexOf(drinkItem.getItem_group()) < 0) {
+                groups.add(drinkItem.getItem_group());
             }
         }
 
@@ -35,8 +35,8 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
             orderedList[i] = new ArrayList<>();
         }
 
-        for (DrinkMenu drinkMenu : drinkMenus) {
-            orderedList[groups.indexOf(drinkMenu.getItem_group())].add(drinkMenu);
+        for (DrinkItem drinkItem : drinkItems) {
+            orderedList[groups.indexOf(drinkItem.getItem_group())].add(drinkItem);
         }
     }
 

@@ -1,6 +1,6 @@
 package com.szantog.brew_e;
 
-public class DrinkMenu {
+public class DrinkItem {
 
     private int id;
     private String item_group;
@@ -8,14 +8,16 @@ public class DrinkMenu {
     private int item_price;
     private String item_image;
     private int shop_id;
+    private String shop_name;
 
-    public DrinkMenu(int id, String item_group, String item_name, int item_price, String item_image, int shop_id) {
+    public DrinkItem(int id, String item_group, String item_name, int item_price, String item_image, int shop_id, String shop_name) {
         this.id = id;
         this.item_group = item_group;
         this.item_name = item_name;
         this.item_price = item_price;
         this.item_image = item_image;
         this.shop_id = shop_id;
+        this.shop_name = shop_name;
     }
 
     public int getId() {
@@ -64,5 +66,13 @@ public class DrinkMenu {
 
     public void setShop_id(int shop_id) {
         this.shop_id = shop_id;
+    }
+
+    public String getShop_name() {
+        return shop_name;
+    }
+
+    public void setShop_name(String shop_name) {
+        this.shop_name = shop_name;
     }
 }
