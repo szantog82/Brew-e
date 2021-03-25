@@ -16,17 +16,15 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-interface BrowseFragmentCallback {
-    void browseFragmentButtonClicked(int buttonId, int shop_Id);
-}
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 public class BrowseFragment extends Fragment implements Marker.OnMarkerClickListener {
 
     public static final int MENU_BUTTON_ID = 200;
     public static final int BLOG_BUTTON_ID = 201;
-
-    private BrowseFragmentCallback browseFragmentCallback;
+    private MainViewModel mainViewModel;
+    private RetrofitListViewModel retrofitListViewModel;
 
     private MapView mapView;
     private List<CoffeeShop> coffeeShopList;
@@ -35,11 +33,6 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
     private TextView shopNameTextView;
     private TextView shopAddressTextView;
     private TextView shopMottoTextView;
-
-    public BrowseFragment(BrowseFragmentCallback browseFragmentCallback, List<CoffeeShop> coffeeShopList) {
-        this.browseFragmentCallback = browseFragmentCallback;
-        this.coffeeShopList = coffeeShopList;
-    }
 
     public void addCoffeeShopsToMap() {
         for (int i = 0; i < coffeeShopList.size(); i++) {
@@ -86,7 +79,19 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
         Double budapestLongitude = 19.03991;
         mapView.getController().setZoom(initZoom);
         mapView.getController().setCenter(new GeoPoint(budapestLatitude, budapestLongitude));
-        addCoffeeShopsToMap();
+
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
+        retrofitListViewModel.getCoffeeShopList().observe(requireActivity(), new Observer<List<CoffeeShop>>() {
+            @Override
+            public void onChanged(List<CoffeeShop> coffeeShops) {
+                if (coffeeShops != null) {
+                    BrowseFragment.this.coffeeShopList = coffeeShops;
+                    if (mapView != null)
+                        addCoffeeShopsToMap();
+                }
+            }
+        });
     }
 
     public void buttonClicked(View v) {
@@ -97,9 +102,8 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
             } else if (v.getId() == R.id.browse_map_blog_text || v.getId() == R.id.browse_map_blog_img) {
                 buttonId = BLOG_BUTTON_ID;
             }
-            if (browseFragmentCallback != null) {
-                browseFragmentCallback.browseFragmentButtonClicked(buttonId, selectedShopId);
-            }
+            retrofitListViewModel.setSelectedShopId(selectedShopId);
+            mainViewModel.setClickedButtonId(buttonId);
         }
     }
 

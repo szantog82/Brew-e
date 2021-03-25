@@ -17,12 +17,16 @@ import java.util.List;
 public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
 
     private Context context;
-    private List<String> groups;
+    private List<String> groups = new ArrayList<>();
     private List<DrinkItem>[] orderedList;
 
     public OrderMenuExpandableAdapter(Context context, List<DrinkItem> drinkItems) {
         this.context = context;
-        groups = new ArrayList<>();
+        updateOrderedList(drinkItems);
+    }
+
+    private void updateOrderedList(List<DrinkItem> drinkItems){
+        groups.clear();
 
         for (DrinkItem drinkItem : drinkItems) {
             if (groups.indexOf(drinkItem.getItem_group()) < 0) {
@@ -38,6 +42,11 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
         for (DrinkItem drinkItem : drinkItems) {
             orderedList[groups.indexOf(drinkItem.getItem_group())].add(drinkItem);
         }
+    }
+
+    public void updateDataSet(List<DrinkItem> drinkItems){
+        updateOrderedList(drinkItems);
+    notifyDataSetChanged();
     }
 
     @Override

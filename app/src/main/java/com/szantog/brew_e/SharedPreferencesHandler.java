@@ -33,6 +33,11 @@ public class SharedPreferencesHandler {
         sharedEditor.apply();
     }
 
+    public void setSessionId(String session_id) {
+        sharedEditor.putString(LOGIN_SESSION_PREF, session_id);
+        sharedEditor.apply();
+    }
+
     public String getSessionId() {
         return sharedPreferences.getString(LOGIN_SESSION_PREF, "");
     }

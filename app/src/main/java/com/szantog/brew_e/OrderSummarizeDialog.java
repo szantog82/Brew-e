@@ -24,7 +24,7 @@ public class OrderSummarizeDialog extends AlertDialog.Builder {
 
     public OrderSummarizeDialog(@NonNull Context context, OrderSummarizeDialogCallback orderSummarizeDialogCallback) {
         super(context);
-        View view = LayoutInflater.from(context).inflate(R.layout.order_summarize_layout, null);
+        View view = LayoutInflater.from(context).inflate(R.layout.order_summarize_dialog_layout, null);
         setView(view);
 
         bucket = new ArrayList<>();
@@ -52,6 +52,3 @@ public class OrderSummarizeDialog extends AlertDialog.Builder {
         adapter.notifyDataSetChanged();
     }
 }
-
-/*Rendelésnél: képet ne küldjük vissza a szerverre!
-        Darabszám megjelölése!*/

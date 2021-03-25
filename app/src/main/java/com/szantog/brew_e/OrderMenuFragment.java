@@ -17,18 +17,18 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 public class OrderMenuFragment extends Fragment implements View.OnClickListener, ExpandableListView.OnChildClickListener, OrderSummarizeDialog.OrderSummarizeDialogCallback {
 
-    interface OrderMenuFragmentCallback {
-        void OrderMenuFragmentOrderSubmitted(List<DrinkItem> bucket);
-    }
-
-    private OrderMenuFragmentCallback orderMenuFragmentCallback;
-
     private List<DrinkItem> drinkItems = new ArrayList<>();
+    private ExpandableListView menuListListView;
     private OrderMenuExpandableAdapter orderMenuExpandableAdapter;
+    private MainViewModel mainViewModel;
+    private RetrofitListViewModel retrofitListViewModel;
 
+    private TextView titleText;
     private TextView bucketItemCountTextView;
     private TextView bucketSumTextView;
     private Button orderButton;
@@ -38,11 +38,6 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
     private List<DrinkItem> bucket;
 
     private boolean is_logged_in;
-
-    public OrderMenuFragment(List<DrinkItem> drinkItems, OrderMenuFragmentCallback orderMenuFragmentCallback) {
-        this.drinkItems = drinkItems;
-        this.orderMenuFragmentCallback = orderMenuFragmentCallback;
-    }
 
     @Nullable
     @Override
@@ -54,34 +49,50 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(getActivity());
-        if (sharedPreferencesHandler.getUserData().getLogin().length() > 1) {
-            is_logged_in = true;
-        } else {
-            is_logged_in = false;
-        }
-
         bucketItemCountTextView = view.findViewById(R.id.order_menu_bucket_item_count_text);
         bucketSumTextView = view.findViewById(R.id.order_menu_bucket_item_sum_text);
         orderButton = view.findViewById(R.id.order_menu_order_button);
         orderButton.setOnClickListener(this);
 
-        TextView titleText = view.findViewById(R.id.order_menu_title_text);
-        if (drinkItems.size() > 0) {
-            titleText.setText(drinkItems.get(0).getShop_name() + " kínálata");
-        } else {
-            titleText.setText("Nincs még itallap feltöltve");
-        }
-        ExpandableListView menuListListView = view.findViewById(R.id.order_menu_list_listview);
+        titleText = view.findViewById(R.id.order_menu_title_text);
+        menuListListView = view.findViewById(R.id.order_menu_list_listview);
         bucket = new ArrayList<>();
+        SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(getActivity());
 
+        if (sharedPreferencesHandler.getSessionId().length() > 1) {
+            orderButton.setEnabled(true);
+            is_logged_in = true;
+        } else {
+            is_logged_in = false;
+        }
         orderMenuExpandableAdapter = new OrderMenuExpandableAdapter(getActivity(), drinkItems);
         menuListListView.setAdapter(orderMenuExpandableAdapter);
         menuListListView.setOnChildClickListener(this);
         for (int i = 0; i < orderMenuExpandableAdapter.getGroupCount(); i++) {
             menuListListView.expandGroup(i);
         }
+
+        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+
+        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
+        retrofitListViewModel.getDrinkMenuItems().observe(getViewLifecycleOwner(), new Observer<List<DrinkItem>>() {
+            @Override
+            public void onChanged(List<DrinkItem> items) {
+                if (items.size() > 0) {
+                    drinkItems.clear();
+                    drinkItems.addAll(items);
+                    titleText.setText(items.get(0).getShop_name() + " kínálata");
+                } else {
+                    titleText.setText("Nincs még itallap feltöltve");
+                }
+                orderMenuExpandableAdapter.updateDataSet(items);
+                for (int i = 0; i < orderMenuExpandableAdapter.getGroupCount(); i++) {
+                    menuListListView.expandGroup(i);
+                }
+            }
+        });
     }
+
 
     private void updateBucket() {
         bucketItemCountTextView.setText(bucket.size() + " tétel");
@@ -142,8 +153,6 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void orderSubmitted() {
-        if (orderMenuFragmentCallback != null) {
-            orderMenuFragmentCallback.OrderMenuFragmentOrderSubmitted(bucket);
-        }
+        mainViewModel.setBucketForOrder(bucket);
     }
 }

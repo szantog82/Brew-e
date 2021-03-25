@@ -26,6 +26,10 @@ public interface RetrofitApi {
     @POST("login_user")
     Call<ResponseModel> loginUser(@Field("login") String login, @Field("password") String password);
 
+    @FormUrlEncoded
+    @POST("register_user")
+    Call<ResponseModel> registerUser(@Field("user") String user);
+
     @POST("test_user_connection")
     Call<User> testUserConnection(@Header("Cookie") String session_id);
 

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +19,12 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 public class BlogFragment extends Fragment {
+
+    private RetrofitListViewModel retrofitListViewModel;
 
     private List<BlogItem> blogItems = new ArrayList<>();
 
@@ -29,10 +34,6 @@ public class BlogFragment extends Fragment {
     private TextView blogMainText;
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd. HH:mm");
-
-    public BlogFragment(List<BlogItem> blogItems) {
-        this.blogItems = blogItems;
-    }
 
     private void showBlog(int index) {
         blogTitleText.setText(blogItems.get(index).getTitle());
@@ -50,6 +51,15 @@ public class BlogFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        retrofitListViewModel = new ViewModelProvider(requireActivity()).get(RetrofitListViewModel.class);
+        retrofitListViewModel.getBlogs().observe(getViewLifecycleOwner(), new Observer<List<BlogItem>>() {
+            @Override
+            public void onChanged(List<BlogItem> blogItems) {
+                Log.e("blogfargment", "aa" + blogItems.size());
+                updateUI(blogItems);
+            }
+        });
 
         blogTitleText = view.findViewById(R.id.blog_title);
         blogAuthorText = view.findViewById(R.id.blog_shop_name);
@@ -81,5 +91,18 @@ public class BlogFragment extends Fragment {
                         .show();
             }
         });
+    }
+
+    private void updateUI(List<BlogItem> items) {
+        if (items.size() > 0) {
+            blogItems = items;
+            Log.e("Blogfragment", " ss" + blogItems.size());
+            showBlog(0);
+        } else {
+            blogTitleText.setText("Nincs még blog feltöltve");
+            blogAuthorText.setText("");
+            blogDateText.setText("");
+            blogMainText.setText("");
+        }
     }
 }

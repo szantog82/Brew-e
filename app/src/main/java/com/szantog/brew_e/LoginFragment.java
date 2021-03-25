@@ -6,22 +6,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
-interface LoginFragmentCallback {
-    void loginFragmentButtonClicked(String login, String password);
-}
 
 public class LoginFragment extends Fragment {
 
-    private LoginFragmentCallback loginFragmentCallback;
+    public static final int SUBMIT_BUTTON_ID = 300;
+    public static final int REGISTER_BUTTON_ID = 301;
+    public static final int FORGOT_PASSWORD_BUTTON_ID = 302;
 
-    public LoginFragment(LoginFragmentCallback loginFragmentCallback) {
-        this.loginFragmentCallback = loginFragmentCallback;
-    }
+    private MainViewModel mainViewModel;
+    private RetrofitListViewModel retrofitListViewModel;
 
     @Nullable
     @Override
@@ -33,17 +33,25 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mainViewModel = new ViewModelProvider((requireActivity())).get(MainViewModel.class);
+        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
+
         Button loginButton = view.findViewById(R.id.login_button);
+        TextView registerTextView = view.findViewById(R.id.login_register_text);
+        registerTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mainViewModel.setClickedButtonId(REGISTER_BUTTON_ID);
+            }
+        });
+
         EditText loginText = view.findViewById(R.id.login_username_edittext);
         EditText passwordText = view.findViewById(R.id.login_password_edittext);
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (loginFragmentCallback != null) {
-                    loginFragmentCallback.loginFragmentButtonClicked(loginText.getText().toString(),
-                            passwordText.getText().toString());
-                }
+                retrofitListViewModel.loginUser(loginText.getText().toString(), passwordText.getText().toString());
             }
         });
     }

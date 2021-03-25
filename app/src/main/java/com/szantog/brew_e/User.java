@@ -4,6 +4,7 @@ public class User {
 
     private int id;
     private String login;
+    private String password;
     private String email;
     private String family_name;
     private String first_name;
@@ -11,6 +12,10 @@ public class User {
     private String country;
     private String city;
     private String street;
+
+    public User() {
+
+    }
 
     public User(int id, String login, String email, String family_name, String first_name, int postalcode, String country, String city, String street) {
         this.id = id;
@@ -38,6 +43,14 @@ public class User {
 
     public void setLogin(String login) {
         this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {
