@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-public class BlogFragment extends Fragment {
+public class BlogFragment extends Fragment implements View.OnClickListener {
 
     private RetrofitListViewModel retrofitListViewModel;
 
@@ -52,19 +51,26 @@ public class BlogFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        retrofitListViewModel = new ViewModelProvider(requireActivity()).get(RetrofitListViewModel.class);
-        retrofitListViewModel.getBlogs().observe(getViewLifecycleOwner(), new Observer<List<BlogItem>>() {
-            @Override
-            public void onChanged(List<BlogItem> blogItems) {
-                Log.e("blogfargment", "aa" + blogItems.size());
-                updateUI(blogItems);
-            }
-        });
-
         blogTitleText = view.findViewById(R.id.blog_title);
         blogAuthorText = view.findViewById(R.id.blog_shop_name);
         blogDateText = view.findViewById(R.id.blog_date);
         blogMainText = view.findViewById(R.id.blog_main);
+
+        retrofitListViewModel = new ViewModelProvider(requireActivity()).get(RetrofitListViewModel.class);
+        retrofitListViewModel.getBlogs().observe(getViewLifecycleOwner(), new Observer<List<BlogItem>>() {
+            @Override
+            public void onChanged(List<BlogItem> blogItems) {
+                updateUI(blogItems);
+            }
+        });
+
+        retrofitListViewModel.getSelectedShopId().observe(getViewLifecycleOwner(), new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer integer) {
+                setUI(integer);
+            }
+        });
+
         blogMainText.setMovementMethod(new ScrollingMovementMethod());
         if (blogItems.size() > 0) {
             showBlog(0);
@@ -73,30 +79,26 @@ public class BlogFragment extends Fragment {
         }
 
         TextView shopNameTextView = view.findViewById(R.id.blog_shop_name);
-        shopNameTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String items[] = new String[blogItems.size()];
-                for (int i = 0; i < blogItems.size(); i++) {
-                    items[i] = blogItems.get(i).getTitle();
-                }
-                new AlertDialog.Builder(getActivity())
-                        .setTitle("További cikkek - " + blogItems.get(0).getShop_name())
-                        .setItems(items, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int which) {
-                                showBlog(which);
-                            }
-                        })
-                        .show();
-            }
-        });
+        shopNameTextView.setOnClickListener(this);
+    }
+
+    private void setUI(int shop_id) {
+        if (shop_id == -1) {
+            blogTitleText.setBackgroundColor(getActivity().getColor(R.color.gray1));
+            blogAuthorText.setBackgroundColor(getActivity().getColor(R.color.white));
+            blogAuthorText.setOnClickListener(null);
+            blogTitleText.setOnClickListener(this);
+        } else {
+            blogTitleText.setBackgroundColor(getActivity().getColor(R.color.white));
+            blogAuthorText.setBackgroundColor(getActivity().getColor(R.color.gray1));
+            blogAuthorText.setOnClickListener(this);
+            blogTitleText.setOnClickListener(null);
+        }
     }
 
     private void updateUI(List<BlogItem> items) {
         if (items.size() > 0) {
             blogItems = items;
-            Log.e("Blogfragment", " ss" + blogItems.size());
             showBlog(0);
         } else {
             blogTitleText.setText("Nincs még blog feltöltve");
@@ -104,5 +106,26 @@ public class BlogFragment extends Fragment {
             blogDateText.setText("");
             blogMainText.setText("");
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        String message = "További cikkek";
+        if (view.getId() == R.id.blog_shop_name) {
+            message += " - " + blogItems.get(0).getShop_name();
+        }
+        String items[] = new String[blogItems.size()];
+        for (int i = 0; i < blogItems.size(); i++) {
+            items[i] = blogItems.get(i).getTitle();
+        }
+        new AlertDialog.Builder(getActivity())
+                .setTitle(message)
+                .setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        showBlog(which);
+                    }
+                })
+                .show();
     }
 }
