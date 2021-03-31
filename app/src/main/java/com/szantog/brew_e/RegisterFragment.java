@@ -35,15 +35,6 @@ public class RegisterFragment extends Fragment {
 
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-
-        user.setLogin("Karcsi");
-        user.setEmail("Karcsi@karcsi.hu");
-        user.setPassword("Karcsi");
-        user.setFamily_name("Nagy");
-        user.setFirst_name("Károly");
-
-
-
         Button submitButton = view.findViewById(R.id.register_submit_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
