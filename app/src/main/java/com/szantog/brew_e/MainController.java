@@ -1,7 +1,12 @@
 package com.szantog.brew_e;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -12,6 +17,7 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -21,6 +27,8 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 public class MainController extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    public static final String CHANNEL_ID = "2013435";
 
     private MainViewModel mainViewModel;
     private RetrofitListViewModel retrofitListViewModel;
@@ -38,6 +46,10 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private static final int ORDERSENTFRAGMENT_ID = 15;
     private static final int REGISTERFRAGMENT_ID = 16;
 
+    private Intent serviceIntent;
+
+    private Boolean isAllBlogs = false;
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private TextView navHeaderNameTextView;
@@ -50,8 +62,13 @@ public class MainController extends AppCompatActivity implements NavigationView.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sharedPreferencesHandler = new SharedPreferencesHandler(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannel();
+        }
 
+        serviceIntent = new Intent(this, OrderService.class);
+
+        sharedPreferencesHandler = new SharedPreferencesHandler(this);
         retrofitListViewModel = new ViewModelProvider(this).get(RetrofitListViewModel.class);
 
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
@@ -65,8 +82,10 @@ public class MainController extends AppCompatActivity implements NavigationView.
                     retrofitListViewModel.downloadShopList();
                     break;
                 case OpenScreenFragment.BLOG_BUTTON_ID:
-                    Toast.makeText(MainController.this, "Itt majd megnyílnak a blogok", Toast.LENGTH_SHORT).show();
-                    //changeFragment(BLOGFRAGMENT_ID);
+                    retrofitListViewModel.setSelectedShopId(-1);
+                    retrofitListViewModel.downloadBlogs();
+                    isAllBlogs = true;
+                    changeFragment(BLOGFRAGMENT_ID);
                     break;
                 case BrowseFragment.MENU_BUTTON_ID:
                     changeFragment(ORDERMENUFRAGMENT_ID);
@@ -106,6 +125,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 logged_in = false;
             } else {
                 logged_in = true;
+                startService(serviceIntent);
                 MainController.this.user = user;
                 sharedPreferencesHandler.setUserData(user);
             }
@@ -171,6 +191,13 @@ public class MainController extends AppCompatActivity implements NavigationView.
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void createNotificationChannel() {
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Brew-e", NotificationManager.IMPORTANCE_HIGH);
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+    }
+
     private void changeFragment(int fragmentId) {
         boolean fragmentPopped = false;
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
@@ -195,7 +222,12 @@ public class MainController extends AppCompatActivity implements NavigationView.
                     fragmentTransaction.replace(R.id.main_fragment_placeholder, new BrowseFragment());
                 break;
             case BLOGFRAGMENT_ID:
-                actualFragmentLevel = 2;
+                if (isAllBlogs) {
+                    actualFragmentLevel = 1;
+                    isAllBlogs = false;
+                } else {
+                    actualFragmentLevel = 2;
+                }
                 fragmentPopped = manager.popBackStackImmediate(String.valueOf(BLOGFRAGMENT_ID), 0);
                 if (!fragmentPopped) {
                     fragmentTransaction.replace(R.id.main_fragment_placeholder, new BlogFragment());
@@ -229,6 +261,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
             navigationView.inflateMenu(R.menu.drawer_menu_not_logged_in);
             navHeaderNameTextView.setText("Vendég");
         }
+        navigationView.setNavigationItemSelectedListener(this);
         drawerLayout.closeDrawer(GravityCompat.START);
     }
 
@@ -259,6 +292,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 break;
             case R.id.drawer_menu_logout:
                 retrofitListViewModel.logoutUser(sharedPreferencesHandler.getSessionId());
+                stopService(serviceIntent);
                 logged_in = false;
                 sharedPreferencesHandler.clearUserData();
                 updateNavigationView();

@@ -50,6 +50,10 @@ public class RetrofitListViewModel extends ViewModel {
         });
     }
 
+    public LiveData<Integer> getSelectedShopId() {
+        return selectedShopId;
+    }
+
     public LiveData<User> getUser() {
         return userData;
     }
