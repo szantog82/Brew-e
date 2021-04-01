@@ -6,7 +6,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -14,6 +13,8 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
 
     private MainViewModel mainViewModel;
     private RetrofitListViewModel retrofitListViewModel;
+    private DatabaseViewModel databaseViewModel;
 
     private SharedPreferencesHandler sharedPreferencesHandler;
 
@@ -45,6 +47,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private static final int ORDERMENUFRAGMENT_ID = 14;
     private static final int ORDERSENTFRAGMENT_ID = 15;
     private static final int REGISTERFRAGMENT_ID = 16;
+    private static final int PREVIOUSORDERSFRAGMENT_ID = 17;
 
     private Intent serviceIntent;
 
@@ -70,7 +73,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
 
         sharedPreferencesHandler = new SharedPreferencesHandler(this);
         retrofitListViewModel = new ViewModelProvider(this).get(RetrofitListViewModel.class);
-
+        databaseViewModel = new ViewModelProvider(this).get(DatabaseViewModel.class);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.getClickedButtonId().observe(this, integer -> {
             switch (integer) {
@@ -107,6 +110,15 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 if (drinkItems != null) {
                     if (drinkItems.size() > 0) {
                         retrofitListViewModel.uploadOrder(sharedPreferencesHandler.getSessionId(), drinkItems);
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd.");
+                        for (DrinkItem drinkItem : drinkItems) {
+                            OrderedItem orderedItem = new OrderedItem();
+                            orderedItem.name = drinkItem.getItem_name();
+                            orderedItem.shop_name = drinkItem.getShop_name();
+                            orderedItem.date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+                            orderedItem.price = drinkItem.getItem_price();
+                            databaseViewModel.insertOrderedItem(orderedItem);
+                        }
                     }
                 }
             }
@@ -245,6 +257,12 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 actualFragmentLevel = 1;
                 fragmentTransaction.replace(R.id.main_fragment_placeholder, new RegisterFragment());
                 break;
+            case PREVIOUSORDERSFRAGMENT_ID:
+                actualFragmentLevel = 1;
+                fragmentPopped = manager.popBackStackImmediate(String.valueOf(PREVIOUSORDERSFRAGMENT_ID), 0);
+                if (!fragmentPopped)
+                    fragmentTransaction.replace(R.id.main_fragment_placeholder, new PreviousOrdersFragments());
+                break;
         }
         if (!fragmentPopped) {
             fragmentTransaction.addToBackStack(String.valueOf(fragmentId));
@@ -287,8 +305,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 changeFragment(LOGINFRAGMENT_ID);
                 break;
             case R.id.drawer_menu_prev_orders:
-                PrevOrdersAlertDialog dialog = new PrevOrdersAlertDialog(this);
-                dialog.show();
+                changeFragment(PREVIOUSORDERSFRAGMENT_ID);
                 break;
             case R.id.drawer_menu_logout:
                 retrofitListViewModel.logoutUser(sharedPreferencesHandler.getSessionId());
