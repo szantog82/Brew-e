@@ -1,10 +1,8 @@
 package com.szantog.brew_e;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
+import android.content.Context;
+import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import okhttp3.OkHttpClient;
@@ -15,47 +13,26 @@ import okhttp3.WebSocketListener;
 
 import static com.szantog.brew_e.MainController.CHANNEL_ID;
 
-public class OrderService extends Service {
+public class Socketing {
 
-    private NotificationManagerCompat notificationManager;
-    private NotificationCompat.Builder builder;
     private static int NOTIFICATION_ID = 1;
+    public static boolean isConnected = false;
 
-    private SharedPreferencesHandler sharedPreferencesHandler;
+    public static void start(Context context) {
+        Log.e("Socketing", "socketing starts");
+        SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(context);
 
-    private WebSocket ws;
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        startWebSocket();
-        return START_STICKY;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        startWebSocket();
-    }
-
-    private void startWebSocket() {
-        sharedPreferencesHandler = new SharedPreferencesHandler(this);
-
-        builder = new NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.coffee_beans_32x32);
-        notificationManager = NotificationManagerCompat.from(this);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(R.drawable.coffee_beans_32x32);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
         if (sharedPreferencesHandler.getSessionId().length() > 10) {
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url("ws://brewe-websocket.herokuapp.com/ss?auth=" + sharedPreferencesHandler.getSessionId().substring(0, 7)).build();
-            ws = client.newWebSocket(request, new WebSocketListener() {
+            WebSocket ws = client.newWebSocket(request, new WebSocketListener() {
                 @Override
                 public void onOpen(WebSocket webSocket, Response response) {
                     super.onOpen(webSocket, response);
+                    isConnected = true;
                 }
 
                 @Override
@@ -81,19 +58,10 @@ public class OrderService extends Service {
                 @Override
                 public void onClosed(WebSocket webSocket, int code, String reason) {
                     super.onClosed(webSocket, code, reason);
+                    isConnected = false;
                 }
             });
             client.dispatcher().executorService().shutdown();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        try {
-            ws.close(1000, "Service halted");
-        } catch (NullPointerException e) {
-            e.printStackTrace();
         }
     }
 }

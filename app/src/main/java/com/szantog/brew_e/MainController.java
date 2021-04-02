@@ -3,7 +3,6 @@ package com.szantog.brew_e;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -16,6 +15,7 @@ import com.google.android.material.navigation.NavigationView;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -26,8 +26,21 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 public class MainController extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+    /*
+    HIÁNYOSSÁGOK:
+    - websocket-et lelövi az op-rendszer egy idő után. Worker class sem optimális.
+    - regisztráció adatainak módosítása még nincsen implementálva
+    - nodejs: ha az üzenetet nem tudjuk elküldeni (mert nem kapcsolódik az user), legyen lementve az üzenet mongodb-be
+    - ...
+     */
+
 
     public static final String CHANNEL_ID = "2013435";
 
@@ -49,7 +62,9 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private static final int REGISTERFRAGMENT_ID = 16;
     private static final int PREVIOUSORDERSFRAGMENT_ID = 17;
 
-    private Intent serviceIntent;
+    //private Intent serviceIntent;
+    private WorkManager workManager;
+    private static final String WEBSOCKETREQUEST_TAG = "websocket_request";
 
     private Boolean isAllBlogs = false;
 
@@ -69,7 +84,16 @@ public class MainController extends AppCompatActivity implements NavigationView.
             createNotificationChannel();
         }
 
-        serviceIntent = new Intent(this, OrderService.class);
+        //serviceIntent = new Intent(this, OrderService.class);
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        PeriodicWorkRequest websocketRequest = new PeriodicWorkRequest.Builder(WebsocketWorker.class, 1, TimeUnit.SECONDS)
+                .setConstraints(constraints)
+                .addTag(WEBSOCKETREQUEST_TAG)
+                .build();
+        workManager = WorkManager.getInstance(this);
 
         sharedPreferencesHandler = new SharedPreferencesHandler(this);
         retrofitListViewModel = new ViewModelProvider(this).get(RetrofitListViewModel.class);
@@ -135,9 +159,11 @@ public class MainController extends AppCompatActivity implements NavigationView.
             if (user == null || user.getLogin() == null || user.getLogin().length() < 1) {
                 sharedPreferencesHandler.clearUserData();
                 logged_in = false;
+                Toast.makeText(MainController.this, "Bejelentkezés sikertelen!", Toast.LENGTH_LONG).show();
             } else {
                 logged_in = true;
-                startService(serviceIntent);
+                //startService(serviceIntent);
+                workManager.enqueue(websocketRequest);
                 MainController.this.user = user;
                 sharedPreferencesHandler.setUserData(user);
             }
@@ -309,7 +335,8 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 break;
             case R.id.drawer_menu_logout:
                 retrofitListViewModel.logoutUser(sharedPreferencesHandler.getSessionId());
-                stopService(serviceIntent);
+                //stopService(serviceIntent);
+                workManager.cancelAllWorkByTag(WEBSOCKETREQUEST_TAG);
                 logged_in = false;
                 sharedPreferencesHandler.clearUserData();
                 updateNavigationView();
