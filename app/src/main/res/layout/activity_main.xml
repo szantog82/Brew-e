@@ -25,6 +25,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/gray1"
+        app:itemTextColor="@color/secondary_blue"
+        app:itemIconTint="@color/secondary_blue"
         app:headerLayout="@layout/drawer_header"
         app:menu="@menu/drawer_menu_not_logged_in"
         app:theme="@style/NavigationItemStyle" />

@@ -10,6 +10,7 @@
 
     <color name="primary_brown">#FF582704</color>
     <color name="secondary_blue">#FF043558</color>
+    <color name="primary_opposite">#FFA7D8FB</color>
     <color name="gray1">#FFCCCCCC</color>
     <color name="gray2">#FFEEEEEE</color>
 </resources>
