@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.model;
 
 public class DrinkItem {
 

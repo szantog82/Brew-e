@@ -1,4 +1,7 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.viewmodel;
+
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.model.User;
 
 import java.util.List;
 

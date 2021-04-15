@@ -1,4 +1,10 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.model.retrofit;
+
+import com.szantog.brew_e.model.BlogItem;
+import com.szantog.brew_e.model.CoffeeShop;
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.model.ResponseModel;
+import com.szantog.brew_e.model.User;
 
 import java.util.List;
 

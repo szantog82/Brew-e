@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -6,6 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.view.adapter.OrderSummarizeListViewAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +19,7 @@ import androidx.appcompat.app.AlertDialog;
 
 public class OrderSummarizeDialog extends AlertDialog.Builder {
 
-    interface OrderSummarizeDialogCallback {
+    public interface OrderSummarizeDialogCallback {
         void orderSubmitted();
     }
 

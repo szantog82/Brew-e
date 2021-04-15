@@ -1,10 +1,15 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+
+import com.szantog.brew_e.model.OrderedItem;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.view.adapter.PrevOrdersExpandableAdapter;
+import com.szantog.brew_e.viewmodel.DatabaseViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-public class PreviousOrdersFragments extends Fragment {
+public class PreviousOrdersFragment extends Fragment {
 
     @Nullable
     @Override

@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -10,6 +10,14 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
+import com.szantog.brew_e.SharedPreferencesHandler;
+import com.szantog.brew_e.view.adapter.OrderMenuExpandableAdapter;
+import com.szantog.brew_e.view.dialog.OrderSummarizeDialog;
+import com.szantog.brew_e.viewmodel.MainViewModel;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,9 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.viewmodel;
 
 import android.app.Application;
+
+import com.szantog.brew_e.OrderLocalRepository;
+import com.szantog.brew_e.model.OrderedItem;
 
 import java.util.List;
 

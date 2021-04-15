@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,6 +7,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.szantog.brew_e.viewmodel.MainViewModel;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.model.retrofit;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

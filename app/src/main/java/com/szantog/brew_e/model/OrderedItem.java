@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.model;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

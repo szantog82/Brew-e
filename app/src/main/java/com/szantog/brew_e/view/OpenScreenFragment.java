@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -6,6 +6,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
+import com.szantog.brew_e.SharedPreferencesHandler;
+import com.szantog.brew_e.model.User;
+import com.szantog.brew_e.viewmodel.MainViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

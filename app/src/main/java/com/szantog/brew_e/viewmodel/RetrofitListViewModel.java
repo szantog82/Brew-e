@@ -1,9 +1,16 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.viewmodel;
 
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.szantog.brew_e.model.BlogItem;
+import com.szantog.brew_e.model.CoffeeShop;
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.model.DrinkItemForUpload;
+import com.szantog.brew_e.model.ResponseModel;
+import com.szantog.brew_e.model.User;
+import com.szantog.brew_e.model.retrofit.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.List;

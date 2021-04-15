@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -7,6 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
+
+import com.szantog.brew_e.model.OrderedItem;
+import com.szantog.brew_e.R;
 
 import java.util.ArrayList;
 import java.util.List;

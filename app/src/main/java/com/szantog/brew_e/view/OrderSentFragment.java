@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -6,6 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.view.adapter.OrderSummarizeListViewAdapter;
+import com.szantog.brew_e.viewmodel.MainViewModel;
 
 import java.util.ArrayList;
 import java.util.List;

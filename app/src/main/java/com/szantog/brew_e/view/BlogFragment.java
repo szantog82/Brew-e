@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -9,6 +9,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.szantog.brew_e.model.BlogItem;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

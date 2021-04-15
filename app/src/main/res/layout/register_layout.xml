@@ -4,7 +4,7 @@
     <data>
         <variable
             name="user"
-            type="com.szantog.brew_e.User" />
+            type="com.szantog.brew_e.model.User" />
     </data>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.model.User;
+import com.szantog.brew_e.viewmodel.MainViewModel;
 import com.szantog.brew_e.databinding.RegisterLayoutBinding;
 
 import androidx.annotation.NonNull;

@@ -1,5 +1,7 @@
 package com.szantog.brew_e;
 
+import com.szantog.brew_e.model.OrderedItem;
+
 import java.util.List;
 
 import androidx.lifecycle.LiveData;

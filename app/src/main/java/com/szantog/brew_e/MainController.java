@@ -11,6 +11,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.model.OrderedItem;
+import com.szantog.brew_e.model.ResponseModel;
+import com.szantog.brew_e.model.User;
+import com.szantog.brew_e.view.BlogFragment;
+import com.szantog.brew_e.view.BrowseFragment;
+import com.szantog.brew_e.view.LoginFragment;
+import com.szantog.brew_e.view.OpenScreenFragment;
+import com.szantog.brew_e.view.OrderMenuFragment;
+import com.szantog.brew_e.view.OrderSentFragment;
+import com.szantog.brew_e.view.PreviousOrdersFragment;
+import com.szantog.brew_e.view.RegisterFragment;
+import com.szantog.brew_e.viewmodel.DatabaseViewModel;
+import com.szantog.brew_e.viewmodel.MainViewModel;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -287,7 +302,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 actualFragmentLevel = 1;
                 fragmentPopped = manager.popBackStackImmediate(String.valueOf(PREVIOUSORDERSFRAGMENT_ID), 0);
                 if (!fragmentPopped)
-                    fragmentTransaction.replace(R.id.main_fragment_placeholder, new PreviousOrdersFragments());
+                    fragmentTransaction.replace(R.id.main_fragment_placeholder, new PreviousOrdersFragment());
                 break;
         }
         if (!fragmentPopped) {

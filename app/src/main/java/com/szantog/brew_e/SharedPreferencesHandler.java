@@ -3,6 +3,8 @@ package com.szantog.brew_e;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.szantog.brew_e.model.User;
+
 public class SharedPreferencesHandler {
 
     private Context context;

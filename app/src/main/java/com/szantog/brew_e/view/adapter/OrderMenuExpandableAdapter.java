@@ -1,4 +1,4 @@
-package com.szantog.brew_e;
+package com.szantog.brew_e.view.adapter;
 
 import android.content.Context;
 import android.util.Base64;
@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.R;
 
 import java.util.ArrayList;
 import java.util.List;
