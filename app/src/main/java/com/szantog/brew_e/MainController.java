@@ -91,6 +91,18 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private User user;
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -101,6 +113,8 @@ public class MainController extends AppCompatActivity implements NavigationView.
 
         //serviceIntent = new Intent(this, OrderService.class);
 
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
