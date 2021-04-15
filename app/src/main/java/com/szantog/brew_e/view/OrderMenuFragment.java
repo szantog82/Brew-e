@@ -11,13 +11,14 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.szantog.brew_e.model.DrinkItem;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 import com.szantog.brew_e.SharedPreferencesHandler;
+import com.szantog.brew_e.model.DrinkItem;
+import com.szantog.brew_e.model.User;
 import com.szantog.brew_e.view.adapter.OrderMenuExpandableAdapter;
 import com.szantog.brew_e.view.dialog.OrderSummarizeDialog;
 import com.szantog.brew_e.viewmodel.MainViewModel;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,8 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
     private TextView bucketSumTextView;
     private Button orderButton;
 
+    private String shopName;
+    private User user;
     private OrderSummarizeDialog orderSummarizeDialog;
 
     private List<DrinkItem> bucket;
@@ -70,6 +73,7 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
         if (sharedPreferencesHandler.getSessionId().length() > 1) {
             orderButton.setEnabled(true);
             is_logged_in = true;
+            user = sharedPreferencesHandler.getUserData();
         } else {
             is_logged_in = false;
         }
@@ -89,7 +93,8 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
                 if (items.size() > 0) {
                     drinkItems.clear();
                     drinkItems.addAll(items);
-                    titleText.setText(items.get(0).getShop_name() + " kínálata");
+                    shopName = items.get(0).getShop_name();
+                    titleText.setText(shopName + " kínálata");
                 } else {
                     titleText.setText("Nincs még itallap feltöltve");
                 }
@@ -124,6 +129,7 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
             if (is_logged_in) {
                 orderSummarizeDialog = new OrderSummarizeDialog(getActivity(), this);
                 orderSummarizeDialog.setBucket(bucket);
+                orderSummarizeDialog.setData(shopName, user);
                 orderSummarizeDialog.show();
             } else {
                 notLoggedInMessage();
@@ -161,6 +167,9 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void orderSubmitted() {
+        if (orderSummarizeDialog != null) {
+            orderSummarizeDialog.dismiss();
+        }
         mainViewModel.setBucketForOrder(bucket);
     }
 }
