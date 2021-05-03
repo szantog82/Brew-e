@@ -7,11 +7,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.szantog.brew_e.AppButtonIdCollection;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 import com.szantog.brew_e.SharedPreferencesHandler;
 import com.szantog.brew_e.model.User;
 import com.szantog.brew_e.viewmodel.MainViewModel;
+import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,10 +22,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 public class OpenScreenFragment extends Fragment {
 
-
-    public static final int LOGIN_BUTTON_ID = 100;
-    public static final int BROWSE_BUTTON_ID = 101;
-    public static final int BLOG_BUTTON_ID = 102;
     private MainViewModel mainViewModel;
     private RetrofitListViewModel retrofitListViewModel;
 
@@ -83,13 +80,13 @@ public class OpenScreenFragment extends Fragment {
         int id = 0;
         switch (v.getId()) {
             case R.id.open_layout_login_text:
-                id = LOGIN_BUTTON_ID;
+                id = AppButtonIdCollection.OPENSCREENFRAGMENT_LOGIN_BUTTON_ID;
                 break;
             case R.id.open_layout_browse_text:
-                id = BROWSE_BUTTON_ID;
+                id = AppButtonIdCollection.OPENSCREENFRAGMENT_BROWSE_BUTTON_ID;
                 break;
             case R.id.open_layout_blog_text:
-                id = BLOG_BUTTON_ID;
+                id = AppButtonIdCollection.OPENSCREENFRAGMENT_BLOG_BUTTON_ID;
                 break;
         }
         mainViewModel.setClickedButtonId(id);

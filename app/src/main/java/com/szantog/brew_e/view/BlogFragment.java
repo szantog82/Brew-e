@@ -2,18 +2,28 @@ package com.szantog.brew_e.view;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LevelListDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.szantog.brew_e.model.BlogItem;
 import com.szantog.brew_e.R;
+import com.szantog.brew_e.model.BlogItem;
 import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,11 +48,22 @@ public class BlogFragment extends Fragment implements View.OnClickListener {
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd. HH:mm");
 
+    private Html.ImageGetter imageGetter = new Html.ImageGetter() {
+        @Override
+        public Drawable getDrawable(String source) {
+            LevelListDrawable drawable = new LevelListDrawable();
+            new LoadImage().execute(source, drawable);
+            return drawable;
+        }
+    };
+
     private void showBlog(int index) {
         blogTitleText.setText(blogItems.get(index).getTitle());
         blogAuthorText.setText(blogItems.get(index).getShop_name());
         blogDateText.setText(simpleDateFormat.format(new Date(blogItems.get(index).getUpload_date() * 1000)));
-        blogMainText.setText(Html.fromHtml(blogItems.get(index).getText()));
+
+        Spanned spanned = Html.fromHtml(blogItems.get(index).getText(), imageGetter, null);
+        blogMainText.setText(spanned);
     }
 
     @Nullable
@@ -131,5 +152,35 @@ public class BlogFragment extends Fragment implements View.OnClickListener {
                     }
                 })
                 .show();
+    }
+
+    class LoadImage extends AsyncTask<Object, Void, Bitmap> {
+
+        private LevelListDrawable levelListDrawable;
+
+        @Override
+        protected Bitmap doInBackground(Object[] objects) {
+            String source = (String) objects[0];
+            levelListDrawable = (LevelListDrawable) objects[1];
+            try {
+                InputStream inputStream = new URL(source).openStream();
+                return BitmapFactory.decodeStream(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (bitmap != null) {
+                BitmapDrawable bitmapDrawable = new BitmapDrawable(getActivity().getResources(), bitmap);
+                levelListDrawable.addLevel(1, 1, bitmapDrawable);
+                levelListDrawable.setBounds(0, 0, 200, 200);
+                levelListDrawable.setLevel(1);
+                CharSequence c = blogMainText.getText();
+                blogMainText.setText(c);
+            }
+        }
     }
 }

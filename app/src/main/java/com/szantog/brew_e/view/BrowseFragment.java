@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.szantog.brew_e.AppButtonIdCollection;
 import com.szantog.brew_e.model.CoffeeShop;
 import com.szantog.brew_e.viewmodel.MainViewModel;
 import com.szantog.brew_e.R;
@@ -26,9 +27,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 public class BrowseFragment extends Fragment implements Marker.OnMarkerClickListener {
 
-    public static final int MENU_BUTTON_ID = 200;
-    public static final int BLOG_BUTTON_ID = 201;
-    private MainViewModel mainViewModel;
+       private MainViewModel mainViewModel;
     private RetrofitListViewModel retrofitListViewModel;
 
     private MapView mapView;
@@ -103,9 +102,9 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
         if (selectedShopId > 0) {
             int buttonId = 0;
             if (v.getId() == R.id.browse_map_drink_menu_text || v.getId() == R.id.browse_map_drink_menu_img) {
-                buttonId = MENU_BUTTON_ID;
+                buttonId = AppButtonIdCollection.BROWSEFRAGMENT_MENU_BUTTON_ID;
             } else if (v.getId() == R.id.browse_map_blog_text || v.getId() == R.id.browse_map_blog_img) {
-                buttonId = BLOG_BUTTON_ID;
+                buttonId = AppButtonIdCollection.BROWSEFRAGMENT_BLOG_BUTTON_ID;
             }
             retrofitListViewModel.setSelectedShopId(selectedShopId);
             mainViewModel.setClickedButtonId(buttonId);

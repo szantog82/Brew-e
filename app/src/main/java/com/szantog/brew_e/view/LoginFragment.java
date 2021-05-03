@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.szantog.brew_e.AppButtonIdCollection;
 import com.szantog.brew_e.viewmodel.MainViewModel;
 import com.szantog.brew_e.R;
 import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
@@ -19,10 +20,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 
 public class LoginFragment extends Fragment {
-
-    public static final int SUBMIT_BUTTON_ID = 300;
-    public static final int REGISTER_BUTTON_ID = 301;
-    public static final int FORGOT_PASSWORD_BUTTON_ID = 302;
 
     private MainViewModel mainViewModel;
     private RetrofitListViewModel retrofitListViewModel;
@@ -45,7 +42,7 @@ public class LoginFragment extends Fragment {
         registerTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mainViewModel.setClickedButtonId(REGISTER_BUTTON_ID);
+                mainViewModel.setClickedButtonId(AppButtonIdCollection.LOGINFRAGMENT_REGISTER_BUTTON_ID);
             }
         });
 
