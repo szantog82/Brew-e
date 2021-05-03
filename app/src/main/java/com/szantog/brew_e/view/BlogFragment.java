@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.method.ScrollingMovementMethod;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -174,9 +175,13 @@ public class BlogFragment extends Fragment implements View.OnClickListener {
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             if (bitmap != null) {
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int width = (bitmap.getWidth() < displayMetrics.widthPixels / 2) ? bitmap.getWidth() : displayMetrics.widthPixels / 2;
+                int height = (bitmap.getHeight() < displayMetrics.heightPixels / 2) ? bitmap.getHeight() : displayMetrics.heightPixels / 2;
                 BitmapDrawable bitmapDrawable = new BitmapDrawable(getActivity().getResources(), bitmap);
                 levelListDrawable.addLevel(1, 1, bitmapDrawable);
-                levelListDrawable.setBounds(0, 0, 200, 200);
+                levelListDrawable.setBounds(0, 0, width, height);
                 levelListDrawable.setLevel(1);
                 CharSequence c = blogMainText.getText();
                 blogMainText.setText(c);
