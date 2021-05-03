@@ -44,10 +44,17 @@ public class SharedPreferencesHandler {
         return sharedPreferences.getString(LOGIN_SESSION_PREF, "");
     }
 
+    public String getUserEmail() {
+        return sharedPreferences.getString(LOGIN_EMAIL_PREF, "");
+    }
+
     public void setUserData(User user) {
-        sharedEditor.putInt(LOGIN_ID_PREF, user.getId());
-        sharedEditor.putString(LOGIN_LOGIN_PREF, user.getLogin());
-        sharedEditor.putString(LOGIN_EMAIL_PREF, user.getEmail());
+        //if equals to 0 => data modified on PreferencesFragment; otherwise downloaded from server
+        if (user.getId() != 0) {
+            sharedEditor.putInt(LOGIN_ID_PREF, user.getId());
+            sharedEditor.putString(LOGIN_LOGIN_PREF, user.getLogin());
+            sharedEditor.putString(LOGIN_EMAIL_PREF, user.getEmail());
+        }
         sharedEditor.putString(LOGIN_FAMILY_NAME_PREF, user.getFamily_name());
         sharedEditor.putString(LOGIN_FIRST_NAME_PREF, user.getFirst_name());
         sharedEditor.putInt(LOGIN_POSTALCODE_PREF, user.getPostalcode());

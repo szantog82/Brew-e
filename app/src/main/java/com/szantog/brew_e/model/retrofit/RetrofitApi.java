@@ -36,6 +36,10 @@ public interface RetrofitApi {
     @POST("register_user")
     Call<ResponseModel> registerUser(@Field("user") String user);
 
+    @FormUrlEncoded
+    @POST("modify_user_params")
+    Call<Void> modifyUser(@Header("Cookie") String session_id, @Field("user") String user);
+
     @POST("test_user_connection")
     Call<User> testUserConnection(@Header("Cookie") String session_id);
 

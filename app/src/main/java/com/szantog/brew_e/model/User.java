@@ -108,4 +108,12 @@ public class User {
     public void setStreet(String street) {
         this.street = street;
     }
+
+    public void setUser(User user){
+        this.family_name=user.getFamily_name();
+        this.first_name=user.getFirst_name();
+        this.postalcode=user.getPostalcode();
+        this.city=user.getCity();
+        this.street=user.getStreet();
+    }
 }

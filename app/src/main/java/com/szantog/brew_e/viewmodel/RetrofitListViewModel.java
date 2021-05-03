@@ -252,6 +252,24 @@ public class RetrofitListViewModel extends ViewModel {
         });
     }
 
+    public void uploadUpdatedUserData(String session_id, User user) {
+        is_Up_Downloading.setValue(true);
+        Gson gson = new GsonBuilder().setLenient().create();
+        String json_string = gson.toJson(user);
+        Call<Void> call = RetrofitClient.getInstance().modifyUser("PHPSESSID=" + session_id, json_string);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                is_Up_Downloading.postValue(false);
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                is_Up_Downloading.postValue(false);
+            }
+        });
+    }
+
     public LiveData<Boolean> isUploadSuccess() {
         return isOrderUploadSuccess;
     }
