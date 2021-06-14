@@ -235,7 +235,7 @@ public class RetrofitListViewModel extends ViewModel {
             public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
                 is_Up_Downloading.postValue(false);
                 ResponseModel r = response.body();
-                if (r.getSuccess() == 1) {
+                if (r != null && r.getSuccess() == 1) {
                     isOrderUploadSuccess.postValue(true);
                 } else {
                     isOrderUploadSuccess.postValue(false);
