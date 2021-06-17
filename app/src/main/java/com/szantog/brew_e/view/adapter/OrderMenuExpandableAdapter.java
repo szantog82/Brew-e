@@ -10,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.szantog.brew_e.model.DrinkItem;
 import com.szantog.brew_e.R;
+import com.szantog.brew_e.model.DrinkItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
         updateOrderedList(drinkItems);
     }
 
-    private void updateOrderedList(List<DrinkItem> drinkItems){
+    private void updateOrderedList(List<DrinkItem> drinkItems) {
         groups.clear();
 
         for (DrinkItem drinkItem : drinkItems) {
@@ -46,9 +46,9 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
         }
     }
 
-    public void updateDataSet(List<DrinkItem> drinkItems){
+    public void updateDataSet(List<DrinkItem> drinkItems) {
         updateOrderedList(drinkItems);
-    notifyDataSetChanged();
+        notifyDataSetChanged();
     }
 
     @Override
@@ -106,9 +106,15 @@ public class OrderMenuExpandableAdapter extends BaseExpandableListAdapter {
         ImageView imageView = view.findViewById(R.id.order_menu_listitem_img);
         nameTextView.setText(orderedList[i].get(i1).getItem_name());
         priceTextView.setText(orderedList[i].get(i1).getItem_price() + " Ft");
-        Glide.with(context)
-                .load(Base64.decode(orderedList[i].get(i1).getItem_image(), Base64.DEFAULT))
-                .into(imageView);
+        try {
+            int index = orderedList[i].get(i1).getItem_image().indexOf("base64,");
+            String base64_img = orderedList[i].get(i1).getItem_image().substring(index + 7);
+            Glide.with(context)
+                    .load(Base64.decode(base64_img, Base64.DEFAULT))
+                    .into(imageView);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return view;
     }
 
