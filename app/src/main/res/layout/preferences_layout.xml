@@ -169,7 +169,7 @@
 
         <variable
             name="user"
-            type="com.szantog.brew_e.model.User" />
+            type="com.szantog.brew_e.domain.User" />
     </data>
 
 </layout>

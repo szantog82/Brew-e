@@ -4,13 +4,13 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.szantog.brew_e.model.BlogItem;
-import com.szantog.brew_e.model.CoffeeShop;
-import com.szantog.brew_e.model.DrinkItem;
-import com.szantog.brew_e.model.DrinkItemForUpload;
-import com.szantog.brew_e.model.ResponseModel;
-import com.szantog.brew_e.model.User;
-import com.szantog.brew_e.model.retrofit.RetrofitClient;
+import com.szantog.brew_e.domain.BlogItem;
+import com.szantog.brew_e.domain.CoffeeShop;
+import com.szantog.brew_e.domain.DrinkItem;
+import com.szantog.brew_e.clients.brewe.dtos.DrinkItemRequest;
+import com.szantog.brew_e.clients.brewe.dtos.AuthResponse;
+import com.szantog.brew_e.domain.User;
+import com.szantog.brew_e.clients.brewe.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class RetrofitListViewModel extends ViewModel {
     private final MutableLiveData<List<BlogItem>> blogItems = new MutableLiveData<>();
 
     private final MutableLiveData<Boolean> isOrderUploadSuccess = new MutableLiveData<>();
-    private final MutableLiveData<ResponseModel> registrationResponse = new MutableLiveData<>();
+    private final MutableLiveData<AuthResponse> registrationResponse = new MutableLiveData<>();
 
     public LiveData<Boolean> isDownloading() {
         return is_Up_Downloading;
@@ -71,20 +71,20 @@ public class RetrofitListViewModel extends ViewModel {
 
     public void loginUser(String login, String password) {
         is_Up_Downloading.setValue(true);
-        Call<ResponseModel> call = RetrofitClient.getInstance().loginUser(login, password);
-        call.enqueue(new Callback<ResponseModel>() {
+        Call<AuthResponse> call = RetrofitClient.getInstance().loginUser(login, password);
+        call.enqueue(new Callback<AuthResponse>() {
             @Override
-            public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                 is_Up_Downloading.postValue(false);
-                ResponseModel responseModel = response.body();
-                if (responseModel.getSession_id().length() > 0) {
-                    testConnection(responseModel.getSession_id());
-                    RetrofitListViewModel.this.session_id.setValue(responseModel.getSession_id());
+                AuthResponse authResponse = response.body();
+                if (authResponse.getSession_id().length() > 0) {
+                    testConnection(authResponse.getSession_id());
+                    RetrofitListViewModel.this.session_id.setValue(authResponse.getSession_id());
                 }
             }
 
             @Override
-            public void onFailure(Call<ResponseModel> call, Throwable t) {
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
                 is_Up_Downloading.postValue(false);
             }
         });
@@ -94,23 +94,23 @@ public class RetrofitListViewModel extends ViewModel {
         is_Up_Downloading.setValue(true);
         Gson gson = new GsonBuilder().setLenient().create();
         String json_string = gson.toJson(user);
-        Call<ResponseModel> call = RetrofitClient.getInstance().registerUser(json_string);
-        call.enqueue(new Callback<ResponseModel>() {
+        Call<AuthResponse> call = RetrofitClient.getInstance().registerUser(json_string);
+        call.enqueue(new Callback<AuthResponse>() {
             @Override
-            public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
-                ResponseModel r = response.body();
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                AuthResponse r = response.body();
                 is_Up_Downloading.postValue(false);
                 registrationResponse.postValue(response.body());
             }
 
             @Override
-            public void onFailure(Call<ResponseModel> call, Throwable t) {
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
                 is_Up_Downloading.postValue(false);
             }
         });
     }
 
-    public LiveData<ResponseModel> getRegistrationresponse() {
+    public LiveData<AuthResponse> getRegistrationresponse() {
         return registrationResponse;
     }
 
@@ -211,12 +211,12 @@ public class RetrofitListViewModel extends ViewModel {
 
     public void uploadOrder(String session_id, List<DrinkItem> bucket) {
         is_Up_Downloading.setValue(true);
-        List<DrinkItemForUpload> bucketForUpload = new ArrayList<>();
+        List<DrinkItemRequest> bucketForUpload = new ArrayList<>();
 
         //convert DrinkItem to DrinkItemForUpload
         for (DrinkItem item : bucket) {
             boolean found = false;
-            for (DrinkItemForUpload o : bucketForUpload) {
+            for (DrinkItemRequest o : bucketForUpload) {
                 if (o.getItem_id() == item.getId()) {
                     found = true;
                     o.setItem_count((o.getItem_count() + 1));
@@ -224,17 +224,17 @@ public class RetrofitListViewModel extends ViewModel {
                 }
             }
             if (!found) {
-                bucketForUpload.add(new DrinkItemForUpload(item.getId(), 1, item.getShop_id()));
+                bucketForUpload.add(new DrinkItemRequest(item.getId(), 1, item.getShop_id()));
             }
         }
         Gson gson = new GsonBuilder().setLenient().create();
         String json_string = gson.toJson(bucketForUpload);
-        Call<ResponseModel> call = RetrofitClient.getInstance().uploadOrder("PHPSESSID=" + session_id, json_string);
-        call.enqueue(new Callback<ResponseModel>() {
+        Call<AuthResponse> call = RetrofitClient.getInstance().uploadOrder("PHPSESSID=" + session_id, json_string);
+        call.enqueue(new Callback<AuthResponse>() {
             @Override
-            public void onResponse(Call<ResponseModel> call, Response<ResponseModel> response) {
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                 is_Up_Downloading.postValue(false);
-                ResponseModel r = response.body();
+                AuthResponse r = response.body();
                 if (r != null && r.getSuccess() == 1) {
                     isOrderUploadSuccess.postValue(true);
                 } else {
@@ -243,7 +243,7 @@ public class RetrofitListViewModel extends ViewModel {
             }
 
             @Override
-            public void onFailure(Call<ResponseModel> call, Throwable t) {
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
                 is_Up_Downloading.postValue(false);
                 isOrderUploadSuccess.postValue(false);
                 Log.e("uploadOrder", t.getMessage());

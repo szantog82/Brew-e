@@ -11,7 +11,7 @@
         android:theme="@style/Theme.Brewe"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".MainController"
+            android:name=".ui.MainController"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".OrderService"/>
+        <service android:name=".services.OrderService"/>
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />
