@@ -8,7 +8,7 @@ import android.widget.ExpandableListView;
 
 import com.szantog.brew_e.data.entities.OrderedItem;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.data.DatabaseViewModel;
+import com.szantog.brew_e.ui.MainViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +35,8 @@ public class PreviousOrdersFragment extends Fragment {
         PrevOrdersExpandableAdapter adapter = new PrevOrdersExpandableAdapter(getActivity(), new ArrayList<>());
         expandableListView.setAdapter(adapter);
 
-        DatabaseViewModel databaseViewModel = new ViewModelProvider(requireActivity()).get(DatabaseViewModel.class);
-        databaseViewModel.getAllOrderedItems().observe(getViewLifecycleOwner(), new Observer<List<OrderedItem>>() {
+        MainViewModel mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        mainViewModel.getAllOrderedItems().observe(getViewLifecycleOwner(), new Observer<List<OrderedItem>>() {
             @Override
             public void onChanged(List<OrderedItem> orderedItems) {
                 adapter.setOrderedItems(orderedItems);

@@ -2,6 +2,8 @@ package com.szantog.brew_e.common;
 
 public class AppButtonIdCollection {
 
+    public static final int LOAD_OPENSCREENFRAGMENT_ID = 99;
+
     public static final int OPENSCREENFRAGMENT_LOGIN_BUTTON_ID = 100;
     public static final int OPENSCREENFRAGMENT_BROWSE_BUTTON_ID = 101;
     public static final int OPENSCREENFRAGMENT_BLOG_BUTTON_ID = 102;

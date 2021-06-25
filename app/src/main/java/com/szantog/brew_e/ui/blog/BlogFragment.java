@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import com.szantog.brew_e.R;
 import com.szantog.brew_e.domain.BlogItem;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
+import com.szantog.brew_e.ui.MainController;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +38,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 public class BlogFragment extends Fragment implements View.OnClickListener {
 
-    private RetrofitListViewModel retrofitListViewModel;
+    private BlogViewModel blogViewModel;
 
     private List<BlogItem> blogItems = new ArrayList<>();
 
@@ -82,18 +82,15 @@ public class BlogFragment extends Fragment implements View.OnClickListener {
         blogDateText = view.findViewById(R.id.blog_date);
         blogMainText = view.findViewById(R.id.blog_main);
 
-        retrofitListViewModel = new ViewModelProvider(requireActivity()).get(RetrofitListViewModel.class);
-        retrofitListViewModel.getBlogs().observe(getViewLifecycleOwner(), new Observer<List<BlogItem>>() {
+        int selectedShopId = ((MainController)(requireActivity())).getSelectedShopId();
+        setUI(selectedShopId);
+
+        blogViewModel = new ViewModelProvider(requireActivity()).get(BlogViewModel.class);
+        blogViewModel.downloadBlogs(selectedShopId);
+        blogViewModel.getBlogs().observe(getViewLifecycleOwner(), new Observer<List<BlogItem>>() {
             @Override
             public void onChanged(List<BlogItem> blogItems) {
                 updateUI(blogItems);
-            }
-        });
-
-        retrofitListViewModel.getSelectedShopId().observe(getViewLifecycleOwner(), new Observer<Integer>() {
-            @Override
-            public void onChanged(Integer integer) {
-                setUI(integer);
             }
         });
 
@@ -108,8 +105,8 @@ public class BlogFragment extends Fragment implements View.OnClickListener {
         shopNameTextView.setOnClickListener(this);
     }
 
-    private void setUI(int shop_id) {
-        if (shop_id == -1) {
+    private void setUI(int shopId) {
+        if (shopId == -1) {
             blogTitleText.setBackgroundColor(getActivity().getColor(R.color.gray1));
             blogAuthorText.setBackgroundColor(getActivity().getColor(R.color.white));
             blogAuthorText.setOnClickListener(null);

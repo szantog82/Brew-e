@@ -17,25 +17,25 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.szantog.brew_e.R;
+import com.szantog.brew_e.clients.brewe.dtos.AuthResponse;
 import com.szantog.brew_e.common.AppButtonIdCollection;
+import com.szantog.brew_e.common.SharedPreferencesHandler;
+import com.szantog.brew_e.data.entities.OrderedItem;
+import com.szantog.brew_e.domain.DrinkItem;
 import com.szantog.brew_e.domain.User;
 import com.szantog.brew_e.services.OrderService;
-import com.szantog.brew_e.R;
-import com.szantog.brew_e.common.SharedPreferencesHandler;
-import com.szantog.brew_e.domain.DrinkItem;
-import com.szantog.brew_e.data.entities.OrderedItem;
-import com.szantog.brew_e.clients.brewe.dtos.AuthResponse;
 import com.szantog.brew_e.ui.blog.BlogFragment;
 import com.szantog.brew_e.ui.browse.BrowseFragment;
 import com.szantog.brew_e.ui.login.LoginFragment;
 import com.szantog.brew_e.ui.openscreen.OpenScreenFragment;
 import com.szantog.brew_e.ui.ordermenu.OrderMenuFragment;
 import com.szantog.brew_e.ui.ordersent.OrderSentFragment;
+import com.szantog.brew_e.ui.ordersent.SendOrderViewModel;
 import com.szantog.brew_e.ui.preferences.PreferencesFragment;
 import com.szantog.brew_e.ui.previousorders.PreviousOrdersFragment;
 import com.szantog.brew_e.ui.register.RegisterFragment;
-import com.szantog.brew_e.data.DatabaseViewModel;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
+import com.szantog.brew_e.ui.register.RegistrationViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -57,8 +57,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
     public static final String CHANNEL_ID = "2013435";
 
     private MainViewModel mainViewModel;
-    private RetrofitListViewModel retrofitListViewModel;
-    private DatabaseViewModel databaseViewModel;
+    private SendOrderViewModel sendOrderViewModel;
 
     private SharedPreferencesHandler sharedPreferencesHandler;
 
@@ -83,6 +82,8 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private NavigationView navigationView;
     private TextView navHeaderNameTextView;
 
+    public int selectedShopId = -1;
+
     private static boolean logged_in = false;
     private User user;
 
@@ -98,12 +99,28 @@ public class MainController extends AppCompatActivity implements NavigationView.
         return super.onOptionsItemSelected(item);
     }
 
-    public void setUser(User user){
-
+    public LiveData<User> getUser() {
+        return mainViewModel.getUser();
     }
 
-    public LiveData<User> getUser(){
-        return mainViewModel.getRegisterUserData();
+    public void setSelectedShopId(int shop_id) {
+        this.selectedShopId = shop_id;
+    }
+
+    public int getSelectedShopId() {
+        return this.selectedShopId;
+    }
+
+    public void showProgressDialog(boolean show) {
+        if (show) {
+            progressDialog.show();
+        } else {
+            progressDialog.dismiss();
+        }
+    }
+
+    public void loginUser(String login, String password) {
+        mainViewModel.loginUser(login, password);
     }
 
     @Override
@@ -121,20 +138,17 @@ public class MainController extends AppCompatActivity implements NavigationView.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         sharedPreferencesHandler = new SharedPreferencesHandler(this);
-        databaseViewModel = new ViewModelProvider(this).get(DatabaseViewModel.class);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        mainViewModel.testConnection(sharedPreferencesHandler.getSessionId());
+
         mainViewModel.getClickedButtonId().observe(this, getClickedButtonIdObserver);
         mainViewModel.getBucketForOrder().observe(this, getBucketForOrdersObserver);
-        mainViewModel.getRegisterUserData().observe(this, getRegisterUserDataObserver);
+        mainViewModel.getUser().observe(this, getUserObserver);
+        mainViewModel.getSessionId().observe(this, getSessionIdObserver);
         changeFragment(OPENSCREENFRAGMENT_ID);
 
-        retrofitListViewModel = new ViewModelProvider(this).get(RetrofitListViewModel.class);
-        retrofitListViewModel.isDownloading().observe(this, isDownloadingObserver);
-        retrofitListViewModel.testConnection(sharedPreferencesHandler.getSessionId());
-        retrofitListViewModel.getUser().observe(this, getUserObserver);
-        retrofitListViewModel.getSessionId().observe(this, getSessionIdObserver);
-        retrofitListViewModel.isUploadSuccess().observe(this, isUploadSuccessObserver);
-        retrofitListViewModel.getRegistrationresponse().observe(this, getRegistrationResponseObserver);
+        sendOrderViewModel = new ViewModelProvider(this).get(SendOrderViewModel.class);
+        sendOrderViewModel.isUploadSuccess().observe(this, isUploadSuccessObserver);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
@@ -149,40 +163,34 @@ public class MainController extends AppCompatActivity implements NavigationView.
         progressDialog.setTitle("Adatok letöltése");
     }
 
-    //
-    //MAINVIEWMODEL OBSERVERS
-    //
     private Observer getClickedButtonIdObserver = new Observer() {
         @Override
         public void onChanged(Object o) {
             int integer = (int) o;
             switch (integer) {
+                case AppButtonIdCollection.LOAD_OPENSCREENFRAGMENT_ID:
+                    changeFragment(OPENSCREENFRAGMENT_ID);
+                    break;
                 case AppButtonIdCollection.OPENSCREENFRAGMENT_LOGIN_BUTTON_ID:
                     changeFragment(LOGINFRAGMENT_ID);
                     break;
                 case AppButtonIdCollection.OPENSCREENFRAGMENT_BROWSE_BUTTON_ID:
                     changeFragment(BROWSEFRAGMENT_ID);
-                    retrofitListViewModel.downloadShopList();
                     break;
                 case AppButtonIdCollection.OPENSCREENFRAGMENT_BLOG_BUTTON_ID:
-                    retrofitListViewModel.setSelectedShopId(-1);
-                    retrofitListViewModel.downloadBlogs();
                     isAllBlogs = true;
                     changeFragment(BLOGFRAGMENT_ID);
                     break;
                 case AppButtonIdCollection.BROWSEFRAGMENT_MENU_BUTTON_ID:
                     changeFragment(ORDERMENUFRAGMENT_ID);
-                    retrofitListViewModel.downloadMenuItems();
                     break;
                 case AppButtonIdCollection.BROWSEFRAGMENT_BLOG_BUTTON_ID:
                     changeFragment(BLOGFRAGMENT_ID);
-                    retrofitListViewModel.downloadBlogs();
                     break;
                 case AppButtonIdCollection.LOGINFRAGMENT_REGISTER_BUTTON_ID:
                     changeFragment(REGISTERFRAGMENT_ID);
                     break;
                 case AppButtonIdCollection.PREFERENCESFRAGMENT_SAVE_BUTTON_ID:
-                    retrofitListViewModel.uploadUpdatedUserData(sharedPreferencesHandler.getSessionId(), sharedPreferencesHandler.getUserData());
                     changeFragment(OPENSCREENFRAGMENT_ID);
                     break;
             }
@@ -195,7 +203,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
             List<DrinkItem> drinkItems = (List<DrinkItem>) o;
             if (drinkItems != null) {
                 if (drinkItems.size() > 0) {
-                    retrofitListViewModel.uploadOrder(sharedPreferencesHandler.getSessionId(), drinkItems);
+                    sendOrderViewModel.uploadOrder(sharedPreferencesHandler.getSessionId(), drinkItems);
                     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy. MM. dd.");
                     for (DrinkItem drinkItem : drinkItems) {
                         OrderedItem orderedItem = new OrderedItem();
@@ -203,32 +211,9 @@ public class MainController extends AppCompatActivity implements NavigationView.
                         orderedItem.shop_name = drinkItem.getShop_name();
                         orderedItem.date = simpleDateFormat.format(new Date(System.currentTimeMillis()));
                         orderedItem.price = drinkItem.getItem_price();
-                        databaseViewModel.insertOrderedItem(orderedItem);
+                        mainViewModel.insertOrderedItem(orderedItem);
                     }
                 }
-            }
-        }
-    };
-
-    private Observer getRegisterUserDataObserver = new Observer() {
-        @Override
-        public void onChanged(Object o) {
-            User user = (User) o;
-            retrofitListViewModel.uploadUserRegistration(user);
-        }
-    };
-
-    //
-    //RETROFITVIEWMODEL OBSERVERS
-    //
-    private Observer isDownloadingObserver = new Observer() {
-        @Override
-        public void onChanged(Object o) {
-            Boolean isDownloading = (Boolean) o;
-            if (isDownloading) {
-                progressDialog.show();
-            } else {
-                progressDialog.dismiss();
             }
         }
     };
@@ -270,21 +255,6 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 changeFragment(ORDERSENTFRAGMENT_ID);
             } else {
                 Toast.makeText(MainController.this, "Rendelés elküldése nem sikerült!", Toast.LENGTH_LONG).show();
-            }
-        }
-    };
-
-    private Observer getRegistrationResponseObserver = new Observer() {
-        @Override
-        public void onChanged(Object o) {
-            AuthResponse authResponse = (AuthResponse) o;
-            if (authResponse.getSuccess() == 1) {
-                sharedPreferencesHandler.setSessionId(authResponse.getSession_id());
-                Toast.makeText(MainController.this, "Sikeres regisztráció", Toast.LENGTH_LONG).show();
-                retrofitListViewModel.testConnection(authResponse.getSession_id());
-                changeFragment(OPENSCREENFRAGMENT_ID);
-            } else {
-                Toast.makeText(MainController.this, "Sikertelen regisztráció!", Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -401,7 +371,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                 changeFragment(PREFERENCESFRAGMENT_ID);
                 break;
             case R.id.drawer_menu_logout:
-                retrofitListViewModel.logoutUser(sharedPreferencesHandler.getSessionId());
+                mainViewModel.logoutUser(sharedPreferencesHandler.getSessionId());
                 logged_in = false;
                 sharedPreferencesHandler.clearUserData();
                 updateNavigationView();

@@ -12,7 +12,6 @@ import com.szantog.brew_e.common.AppButtonIdCollection;
 import com.szantog.brew_e.ui.MainController;
 import com.szantog.brew_e.ui.MainViewModel;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +22,6 @@ import androidx.lifecycle.ViewModelProvider;
 public class LoginFragment extends Fragment {
 
     private MainViewModel mainViewModel;
-    private RetrofitListViewModel retrofitListViewModel;
 
     @Nullable
     @Override
@@ -36,7 +34,6 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         //((MainController)requireActivity()).getUser().
         mainViewModel = new ViewModelProvider((requireActivity())).get(MainViewModel.class);
-        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
 
         Button loginButton = view.findViewById(R.id.login_button);
         TextView registerTextView = view.findViewById(R.id.login_register_text);
@@ -53,7 +50,7 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                retrofitListViewModel.loginUser(loginText.getText().toString(), passwordText.getText().toString());
+                ((MainController)requireActivity()).loginUser(loginText.getText().toString(), passwordText.getText().toString());
             }
         });
     }

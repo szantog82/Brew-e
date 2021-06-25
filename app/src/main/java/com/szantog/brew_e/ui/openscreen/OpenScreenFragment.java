@@ -11,8 +11,8 @@ import com.szantog.brew_e.common.AppButtonIdCollection;
 import com.szantog.brew_e.R;
 import com.szantog.brew_e.common.SharedPreferencesHandler;
 import com.szantog.brew_e.domain.User;
+import com.szantog.brew_e.ui.MainController;
 import com.szantog.brew_e.ui.MainViewModel;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModelProvider;
 public class OpenScreenFragment extends Fragment {
 
     private MainViewModel mainViewModel;
-    private RetrofitListViewModel retrofitListViewModel;
 
     private User user;
 
@@ -47,8 +46,7 @@ public class OpenScreenFragment extends Fragment {
         SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(getActivity());
 
         mainViewModel = new ViewModelProvider((requireActivity())).get(MainViewModel.class);
-        retrofitListViewModel = new ViewModelProvider(requireActivity()).get(RetrofitListViewModel.class);
-        retrofitListViewModel.getUser().observe(getViewLifecycleOwner(), new Observer<User>() {
+        ((MainController)requireActivity()).getUser().observe(getViewLifecycleOwner(), new Observer<User>() {
             @Override
             public void onChanged(User user) {
                 if (user == null || user.getLogin() == null || user.getLogin().length() < 1) {

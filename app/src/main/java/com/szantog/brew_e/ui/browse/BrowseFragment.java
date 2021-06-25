@@ -6,11 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.szantog.brew_e.domain.CoffeeShop;
-import com.szantog.brew_e.common.AppButtonIdCollection;
-import com.szantog.brew_e.ui.MainViewModel;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
+import com.szantog.brew_e.common.AppButtonIdCollection;
+import com.szantog.brew_e.domain.CoffeeShop;
+import com.szantog.brew_e.ui.MainController;
+import com.szantog.brew_e.ui.MainViewModel;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -27,8 +27,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 public class BrowseFragment extends Fragment implements Marker.OnMarkerClickListener {
 
-       private MainViewModel mainViewModel;
-    private RetrofitListViewModel retrofitListViewModel;
+    private MainViewModel mainViewModel;
+    private BrowseViewModel browseViewModel;
 
     private MapView mapView;
     private List<CoffeeShop> coffeeShopList;
@@ -85,8 +85,11 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
         mapView.getController().setCenter(new GeoPoint(budapestLatitude, budapestLongitude));
 
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
-        retrofitListViewModel.getCoffeeShopList().observe(requireActivity(), new Observer<List<CoffeeShop>>() {
+        browseViewModel = new ViewModelProvider((requireActivity())).get(BrowseViewModel.class);
+        ((MainController)requireActivity()).showProgressDialog(true);
+        browseViewModel.downloadShopList();
+        ((MainController)requireActivity()).showProgressDialog(false);
+        browseViewModel.getCoffeeShopList().observe(requireActivity(), new Observer<List<CoffeeShop>>() {
             @Override
             public void onChanged(List<CoffeeShop> coffeeShops) {
                 if (coffeeShops != null) {
@@ -106,7 +109,6 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
             } else if (v.getId() == R.id.browse_map_blog_text || v.getId() == R.id.browse_map_blog_img) {
                 buttonId = AppButtonIdCollection.BROWSEFRAGMENT_BLOG_BUTTON_ID;
             }
-            retrofitListViewModel.setSelectedShopId(selectedShopId);
             mainViewModel.setClickedButtonId(buttonId);
         }
     }
@@ -115,6 +117,7 @@ public class BrowseFragment extends Fragment implements Marker.OnMarkerClickList
     public boolean onMarkerClick(Marker marker, MapView mapView) {
         int selectedId = Integer.parseInt(marker.getSubDescription());
         selectedShopId = selectedId;
+        ((MainController) requireActivity()).setSelectedShopId(selectedId);
         int index = 0;
         for (int i = 0; i < coffeeShopList.size(); i++) {
             if (coffeeShopList.get(i).getId() == selectedShopId) {

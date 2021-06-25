@@ -15,8 +15,8 @@ import com.szantog.brew_e.R;
 import com.szantog.brew_e.domain.DrinkItem;
 import com.szantog.brew_e.common.SharedPreferencesHandler;
 import com.szantog.brew_e.domain.User;
+import com.szantog.brew_e.ui.MainController;
 import com.szantog.brew_e.ui.MainViewModel;
-import com.szantog.brew_e.viewmodel.RetrofitListViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
     private ExpandableListView menuListListView;
     private OrderMenuExpandableAdapter orderMenuExpandableAdapter;
     private MainViewModel mainViewModel;
-    private RetrofitListViewModel retrofitListViewModel;
+    private OrderMenuViewModel orderMenuViewModel;
 
     private TextView titleText;
     private TextView bucketItemCountTextView;
@@ -84,8 +84,9 @@ public class OrderMenuFragment extends Fragment implements View.OnClickListener,
 
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
 
-        retrofitListViewModel = new ViewModelProvider((requireActivity())).get(RetrofitListViewModel.class);
-        retrofitListViewModel.getDrinkMenuItems().observe(getViewLifecycleOwner(), new Observer<List<DrinkItem>>() {
+        orderMenuViewModel = new ViewModelProvider((requireActivity())).get(OrderMenuViewModel.class);
+        orderMenuViewModel.downloadMenuItems(((MainController)requireActivity()).getSelectedShopId());
+        orderMenuViewModel.getDrinkMenuItems().observe(getViewLifecycleOwner(), new Observer<List<DrinkItem>>() {
             @Override
             public void onChanged(List<DrinkItem> items) {
                 if (items.size() > 0) {

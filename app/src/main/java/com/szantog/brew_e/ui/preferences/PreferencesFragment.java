@@ -24,6 +24,7 @@ public class PreferencesFragment extends Fragment {
 
     private User user;
     private MainViewModel mainViewModel;
+    private PreferencesViewModel preferencesViewModel;
 
     @Nullable
     @Override
@@ -40,6 +41,7 @@ public class PreferencesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        preferencesViewModel = new ViewModelProvider(requireActivity()).get(PreferencesViewModel.class);
 
         SharedPreferencesHandler sharedPreferencesHandler = new SharedPreferencesHandler(getActivity());
         user.setUser(sharedPreferencesHandler.getUserData());
@@ -50,6 +52,7 @@ public class PreferencesFragment extends Fragment {
             public void onClick(View view) {
                 sharedPreferencesHandler.setUserData(user);
                 Toast.makeText(getActivity(), "A mentés sikerült!", Toast.LENGTH_LONG).show();
+                preferencesViewModel.uploadUpdatedUserData(sharedPreferencesHandler.getSessionId(), sharedPreferencesHandler.getUserData());
                 mainViewModel.setClickedButtonId(AppButtonIdCollection.PREFERENCESFRAGMENT_SAVE_BUTTON_ID);
             }
         });
