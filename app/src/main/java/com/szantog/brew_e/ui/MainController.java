@@ -1,4 +1,5 @@
-package com.szantog.brew_e.ui;
+
+        package com.szantog.brew_e.ui;
 
 //databaseviewmodel át a mainviewmodel-be !
 //databaseviewmodel törlődik
@@ -18,7 +19,6 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.szantog.brew_e.R;
-import com.szantog.brew_e.clients.brewe.dtos.AuthResponse;
 import com.szantog.brew_e.common.AppButtonIdCollection;
 import com.szantog.brew_e.common.SharedPreferencesHandler;
 import com.szantog.brew_e.data.entities.OrderedItem;
@@ -31,11 +31,9 @@ import com.szantog.brew_e.ui.login.LoginFragment;
 import com.szantog.brew_e.ui.openscreen.OpenScreenFragment;
 import com.szantog.brew_e.ui.ordermenu.OrderMenuFragment;
 import com.szantog.brew_e.ui.ordersent.OrderSentFragment;
-import com.szantog.brew_e.ui.ordersent.SendOrderViewModel;
 import com.szantog.brew_e.ui.preferences.PreferencesFragment;
 import com.szantog.brew_e.ui.previousorders.PreviousOrdersFragment;
 import com.szantog.brew_e.ui.register.RegisterFragment;
-import com.szantog.brew_e.ui.register.RegistrationViewModel;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

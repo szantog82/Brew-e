@@ -1,4 +1,4 @@
-package com.szantog.brew_e.ui.ordersent;
+package com.szantog.brew_e.ui;
 
 import android.util.Log;
 
