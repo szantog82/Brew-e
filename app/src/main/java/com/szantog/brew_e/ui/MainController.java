@@ -1,15 +1,9 @@
 
-        package com.szantog.brew_e.ui;
-
-//databaseviewmodel át a mainviewmodel-be !
-//databaseviewmodel törlődik
-//retrofitlistmodel szétszedése funkciók szerint; közös funkciók meghívása a MainControlleren keresztül a MainViewModel-ből
-
+package com.szantog.brew_e.ui;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -17,14 +11,19 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.szantog.brew_e.R;
 import com.szantog.brew_e.common.AppButtonIdCollection;
 import com.szantog.brew_e.common.SharedPreferencesHandler;
 import com.szantog.brew_e.data.entities.OrderedItem;
 import com.szantog.brew_e.domain.DrinkItem;
 import com.szantog.brew_e.domain.User;
-import com.szantog.brew_e.services.OrderService;
 import com.szantog.brew_e.ui.blog.BlogFragment;
 import com.szantog.brew_e.ui.browse.BrowseFragment;
 import com.szantog.brew_e.ui.login.LoginFragment;
@@ -72,8 +71,6 @@ public class MainController extends AppCompatActivity implements NavigationView.
     private static final int PREVIOUSORDERSFRAGMENT_ID = 17;
     private static final int PREFERENCESFRAGMENT_ID = 18;
 
-    private Intent serviceIntent;
-
     private Boolean isAllBlogs = false;
 
     private DrawerLayout drawerLayout;
@@ -84,6 +81,8 @@ public class MainController extends AppCompatActivity implements NavigationView.
 
     private static boolean logged_in = false;
     private User user;
+
+    private FirebaseAuth mAuth;
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -125,17 +124,18 @@ public class MainController extends AppCompatActivity implements NavigationView.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        FirebaseApp.initializeApp(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
 
-        serviceIntent = new Intent(this, OrderService.class);
-
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         sharedPreferencesHandler = new SharedPreferencesHandler(this);
+        mAuth = FirebaseAuth.getInstance();
+
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         mainViewModel.testConnection(sharedPreferencesHandler.getSessionId());
 
@@ -143,6 +143,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
         mainViewModel.getBucketForOrder().observe(this, getBucketForOrdersObserver);
         mainViewModel.getUser().observe(this, getUserObserver);
         mainViewModel.getSessionId().observe(this, getSessionIdObserver);
+        mainViewModel.getLoginToken().observe(this, getLoginTokenObserver);
         changeFragment(OPENSCREENFRAGMENT_ID);
 
         sendOrderViewModel = new ViewModelProvider(this).get(SendOrderViewModel.class);
@@ -223,11 +224,9 @@ public class MainController extends AppCompatActivity implements NavigationView.
             if (user == null || user.getLogin() == null || user.getLogin().length() < 1) {
                 sharedPreferencesHandler.clearUserData();
                 logged_in = false;
-                stopService(serviceIntent);
                 Toast.makeText(MainController.this, "Használat vendégként", Toast.LENGTH_LONG).show();
             } else {
                 logged_in = true;
-                startService(serviceIntent);
                 MainController.this.user = user;
                 sharedPreferencesHandler.setUserData(user);
             }
@@ -241,6 +240,32 @@ public class MainController extends AppCompatActivity implements NavigationView.
         public void onChanged(Object o) {
             String sessionId = (String) o;
             sharedPreferencesHandler.setSessionId(sessionId);
+        }
+    };
+
+    private Observer getLoginTokenObserver = new Observer() {
+        @Override
+        public void onChanged(Object o) {
+            String loginToken = (String) o;
+            if (loginToken != null && loginToken.length() > 1) {
+                mAuth.signInWithCustomToken(loginToken).addOnCompleteListener(MainController.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(MainController.this, new OnCompleteListener<String>() {
+                                @Override
+                                public void onComplete(@NonNull Task<String> task) {
+                                    String firebaseToken = task.getResult();
+                                    mainViewModel.uploadFirebaseToken(sharedPreferencesHandler.getSessionId(), firebaseToken);
+                                }
+                            });
+                            //mAuth.signOut();
+                        } else {
+                            Toast.makeText(MainController.this, "Firebase bejelentkezés sikertelen", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
         }
     };
 
@@ -383,6 +408,5 @@ public class MainController extends AppCompatActivity implements NavigationView.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopService(serviceIntent);
     }
 }

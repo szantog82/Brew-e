@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "921835980803",
+    "project_id": "empyrean-button-306915",
+    "storage_bucket": "empyrean-button-306915.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:921835980803:android:b0187fa722d20fa5c26636",
+        "android_client_info": {
+          "package_name": "com.szantog.brew_e"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "921835980803-jhvjdpa3k2ttttp1r72cganj8ik9qsma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvow9DrI82qNRhPfW1ya_nfhW-zu4BJeM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "921835980803-jhvjdpa3k2ttttp1r72cganj8ik9qsma.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
