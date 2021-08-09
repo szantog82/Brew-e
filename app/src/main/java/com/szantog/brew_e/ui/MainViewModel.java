@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.szantog.brew_e.clients.brewe.RetrofitClient;
 import com.szantog.brew_e.clients.brewe.dtos.AuthResponse;
+import com.szantog.brew_e.clients.brewe.dtos.UserRequest;
 import com.szantog.brew_e.data.OrderLocalRepository;
 import com.szantog.brew_e.data.entities.OrderedItem;
 import com.szantog.brew_e.domain.DrinkItem;
@@ -14,7 +15,6 @@ import java.util.List;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -24,6 +24,7 @@ public class MainViewModel extends AndroidViewModel {
     private OrderLocalRepository orderLocalRepository;
     private final MutableLiveData<User> userData = new MutableLiveData<>();
     private final MutableLiveData<String> session_id = new MutableLiveData<>();
+    private final MutableLiveData<String> login_token = new MutableLiveData<>();
     private final MutableLiveData<List<DrinkItem>> bucket = new MutableLiveData<>();
 
     private final MutableLiveData<Integer> clickedButton = new MutableLiveData<>();
@@ -57,6 +58,10 @@ public class MainViewModel extends AndroidViewModel {
         return session_id;
     }
 
+    public LiveData<String> getLoginToken() {
+        return login_token;
+    }
+
     public LiveData<List<OrderedItem>> getAllOrderedItems() {
         return orderLocalRepository.getAllOrderedItems();
     }
@@ -84,18 +89,19 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void testConnection(String session_id) {
-        Call<User> call = RetrofitClient.getInstance().testUserConnection("PHPSESSID=" + session_id);
-        call.enqueue(new Callback<User>() {
+        Call<UserRequest> call = RetrofitClient.getInstance().testUserConnection("PHPSESSID=" + session_id);
+        call.enqueue(new Callback<UserRequest>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                User user = response.body();
-                if (user != null) {
-                    userData.setValue(user);
+            public void onResponse(Call<UserRequest> call, Response<UserRequest> response) {
+                UserRequest userRequest = response.body();
+                if (userRequest != null) {
+                    login_token.setValue(userRequest.getLogin_token());
+                    userData.setValue(userRequest.convertToUser());
                 }
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<UserRequest> call, Throwable t) {
             }
         });
     }
@@ -110,6 +116,21 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
+            }
+        });
+    }
+
+    public void uploadFirebaseToken(String session_id, String firebaseToken) {
+        Call<Void> call = RetrofitClient.getInstance().uploadFirbaseToken("PHPSESSID=" + session_id, firebaseToken);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+
             }
         });
     }

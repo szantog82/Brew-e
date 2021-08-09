@@ -1,8 +1,8 @@
-package com.szantog.brew_e.domain;
+package com.szantog.brew_e.clients.brewe.dtos;
 
-import com.szantog.brew_e.clients.brewe.dtos.UserRequest;
+import com.szantog.brew_e.domain.User;
 
-public class User {
+public class UserRequest {
 
     private int id;
     private String login;
@@ -14,12 +14,13 @@ public class User {
     private String country;
     private String city;
     private String street;
+    private String login_token;
 
-    public User() {
+    public UserRequest() {
 
     }
 
-    public User(int id, String login, String email, String family_name, String first_name, int postalcode, String country, String city, String street) {
+    public UserRequest(int id, String login, String email, String family_name, String first_name, int postalcode, String country, String city, String street, String login_token) {
         this.id = id;
         this.login = login;
         this.email = email;
@@ -29,6 +30,7 @@ public class User {
         this.country = country;
         this.city = city;
         this.street = street;
+        this.login_token = login_token;
     }
 
     public int getId() {
@@ -111,11 +113,16 @@ public class User {
         this.street = street;
     }
 
-    public void setUser(User user){
-        this.family_name= user.getFamily_name();
-        this.first_name= user.getFirst_name();
-        this.postalcode= user.getPostalcode();
-        this.city= user.getCity();
-        this.street= user.getStreet();
+    public String getLogin_token() {
+        return login_token;
+    }
+
+    public void setLogin_token(String login_token) {
+        this.login_token = login_token;
+    }
+
+    public User convertToUser() {
+        return new User(this.id, this.login, this.email, this.family_name, this.first_name, this.postalcode, this.country, this.city, this.street);
     }
 }
+

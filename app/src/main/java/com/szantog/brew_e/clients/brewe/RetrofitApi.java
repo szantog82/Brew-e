@@ -1,5 +1,6 @@
 package com.szantog.brew_e.clients.brewe;
 
+import com.szantog.brew_e.clients.brewe.dtos.UserRequest;
 import com.szantog.brew_e.domain.User;
 import com.szantog.brew_e.domain.BlogItem;
 import com.szantog.brew_e.domain.CoffeeShop;
@@ -41,7 +42,7 @@ public interface RetrofitApi {
     Call<Void> modifyUser(@Header("Cookie") String session_id, @Field("user") String user);
 
     @POST("test_user_connection")
-    Call<User> testUserConnection(@Header("Cookie") String session_id);
+    Call<UserRequest> testUserConnection(@Header("Cookie") String session_id);
 
     @POST("logout_user")
     Call<Void> logoutUser(@Header("Cookie") String session_id);
@@ -49,4 +50,8 @@ public interface RetrofitApi {
     @FormUrlEncoded
     @POST("upload_order")
     Call<AuthResponse> uploadOrder(@Header("Cookie") String session_id, @Field("bucket") String data);
+
+    @FormUrlEncoded
+    @POST("upload_firebase_token")
+    Call<Void> uploadFirbaseToken(@Header("Cookie") String session_id, @Field("firebase_token") String firebase_token);
 }
