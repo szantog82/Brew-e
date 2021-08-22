@@ -261,7 +261,7 @@ public class MainController extends AppCompatActivity implements NavigationView.
                             });
                             //mAuth.signOut();
                         } else {
-                            Toast.makeText(MainController.this, "Firebase bejelentkezés sikertelen", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(MainController.this, "Firebase bejelentkezés sikertelen", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
